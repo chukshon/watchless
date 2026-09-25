@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build / output
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+coverage/
+*.tsbuildinfo
+
+# Runtime / local data
+tmp/
+temp/
+*.pid
+*.seed
+*.pid.lock
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors / IDEs
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+
+# Test / tooling
+.nyc_output/
+.eslintcache
+.prettiercache
+
+# Optional local overrides
+*.local
