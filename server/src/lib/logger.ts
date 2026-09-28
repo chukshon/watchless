@@ -15,7 +15,7 @@ const consoleFormat =
             ? `\n${JSON.stringify(meta)}`
             : '';
           return `${timestamp} [${level}] : ${message}${rest}`;
-        }),
+        })
       )
     : combine(timestamp(), errors({ stack: true }), json());
 
@@ -30,4 +30,10 @@ const logger = winston.createLogger({
   silent: env.NODE_ENV === 'test',
 });
 
-export { logger };
+const morganStream = {
+  write: (message: string) => {
+    logger.http(message.trim());
+  },
+};
+
+export { logger, morganStream };
