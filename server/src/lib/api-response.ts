@@ -7,6 +7,7 @@ export interface SuccessResponse<T = unknown> {
 export interface ErrorResponse {
   success: false;
   message: string;
+  errorCode?: string;
   errors?: unknown;
 }
 
@@ -22,8 +23,10 @@ export const getSuccessResponse = <T>(
 export const getErrorResponse = (
   message: string,
   errors?: unknown,
+  errorCode?: string,
 ): ErrorResponse => ({
   success: false,
   message,
+  ...(errorCode !== undefined ? { errorCode } : {}),
   ...(errors !== undefined ? { errors } : {}),
 });
