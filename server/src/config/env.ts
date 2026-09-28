@@ -11,6 +11,11 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'])
     .default('info'),
+  DB_HOST: z.string().min(1).default('localhost'),
+  DB_PORT: z.coerce.number().int().positive().default(5432),
+  DB_NAME: z.string().min(1).default('watchless'),
+  DB_USER: z.string().min(1).default('watchless'),
+  DB_PASSWORD: z.string().min(1).default('watchless'),
 });
 
 export const env = createEnv(envSchema);
