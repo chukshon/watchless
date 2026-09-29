@@ -1,8 +1,10 @@
 import { Router } from 'express';
+import authRoutes from './auth.routes';
 import healthRoutes from './health.routes';
 
 const routes = Router();
 
-// Feature routers mount here later, e.g. routes.use('/summaries', summaryRoutes);
 routes.use('/health', healthRoutes);
+routes.use('/auth', authRoutes);
+
 export default routes;

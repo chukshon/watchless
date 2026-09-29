@@ -4,7 +4,7 @@ import morgan from 'morgan';
 import { env } from '@/config/env';
 import { getSuccessResponse } from '@/types/api-response';
 import { morganStream } from '@/lib/logger';
-import { errorMiddleware } from '@/middleware/error.middleware';
+import { errorHandlerMiddleware } from '@/middleware/error.middleware';
 import { notFoundMiddleware } from '@/middleware/not-found.middleware';
 import routes from '@/routes';
 
@@ -27,6 +27,6 @@ app.get('/', (_req, res) => {
 app.use('/api', routes);
 
 app.use(notFoundMiddleware);
-app.use(errorMiddleware);
+app.use(errorHandlerMiddleware);
 
 export default app;

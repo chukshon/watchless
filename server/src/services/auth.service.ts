@@ -1,37 +1,23 @@
+import crypto from 'crypto';
 import { AppDataSource } from '@/database/data-source';
 import { User } from '@/database/entities/user.entity';
 import { ConflictException } from '@/errors/http-errors';
-import crypto from 'crypto';
 import { generateToken } from '@/lib/jwt';
-
-export type PublicUser = {
-  id: string;
-  email: string;
-  name: string | null;
-  isEmailVerified: boolean;
-  lastLogin: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  token: string;
-};
+import type { AuthUserResponse } from '@/types/user';
+import type { RegisterInputT } from '@/validators/auth.validator';
 
 export class AuthService {
   private static readonly userRepository = AppDataSource.getRepository(User);
 
-  static async register(
-    email: string,
-    password: string,
-    name?: string
-  ): Promise<PublicUser> {
+  static async register(input: RegisterInputT): Promise<AuthUserResponse> {
     const existingUser = await this.userRepository.findOne({
-      where: { email: email.toLowerCase() },
+      where: { email: input.email.toLowerCase() },
     });
 
     if (existingUser) {
       throw new ConflictException('Email already in use');
     }
 
-    // Create email verification token
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationTokenExpiresIn = new Date();
     verificationTokenExpiresIn.setHours(
@@ -39,9 +25,9 @@ export class AuthService {
     );
 
     const user = this.userRepository.create({
-      email: email.toLowerCase(),
-      password: password,
-      name: name,
+      email: input.email.toLowerCase(),
+      password: input.password,
+      name: input.name,
       emailVerificationToken: verificationToken,
       emailVerificationTokenExpires: verificationTokenExpiresIn,
     });
@@ -58,7 +44,7 @@ export class AuthService {
     return this.toPublicUser(savedUser, jwtToken);
   }
 
-  private static toPublicUser(user: User, token: string): PublicUser {
+  private static toPublicUser(user: User, token: string): AuthUserResponse {
     return {
       id: user.id,
       email: user.email,
@@ -67,7 +53,7 @@ export class AuthService {
       lastLogin: user.lastLogin,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      token: token,
+      token,
     };
   }
 }

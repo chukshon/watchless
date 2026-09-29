@@ -1,49 +1,27 @@
-import type { NextFunction, Request, Response } from 'express';
-import { env } from '@/config/env';
+import { ErrorRequestHandler } from 'express';
 import { HTTPSTATUS } from '@/constants/http-status-code';
 import { AppError } from '@/errors/app-error';
-import { getErrorResponse } from '@/types/api-response';
 import { logger } from '@/lib/logger';
 
-export const errorMiddleware = (
-  err: Error,
-  _req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
-  if (res.headersSent) {
-    next(err);
-    return;
-  }
+export const errorHandlerMiddleware: ErrorRequestHandler = (
+  err,
+  req,
+  res,
+  next
+) => {
+  logger.error(err.message, { error: err });
 
   if (err instanceof AppError) {
-    if (err.statusCode >= 500) {
-      logger.error(err.message, {
-        stack: err.stack,
-        errorCode: err.errorCode,
-        details: err.details,
-      });
-    } else {
-      logger.warn(err.message, {
-        statusCode: err.statusCode,
-        errorCode: err.errorCode,
-        details: err.details,
-      });
-    }
+    const response = err?.details
+      ? { success: false, message: err.message, errors: err.details.errors }
+      : { success: false, message: err.message };
 
-    res
-      .status(err.statusCode)
-      .json(getErrorResponse(err.message, err.details, err.errorCode));
-    return;
+    return res.status(err.statusCode).json(response);
   }
 
-  logger.error('Unhandled error', {
-    message: err.message,
-    stack: err.stack,
+  return res.status(HTTPSTATUS.INTERNAL_SERVER_ERROR).json({
+    success: false,
+    message: 'Internal server error',
+    error: err?.message || 'An unknown error occurred',
   });
-
-  const message =
-    env.NODE_ENV === 'production' ? 'Internal server error' : err.message;
-
-  res.status(HTTPSTATUS.INTERNAL_SERVER_ERROR).json(getErrorResponse(message));
 };
