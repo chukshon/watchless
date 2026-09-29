@@ -1,11 +1,7 @@
 import crypto from 'crypto';
 import { AppDataSource } from '@/database/data-source';
 import { User } from '@/database/entities/user.entity';
-import {
-  ConflictException,
-  NotFoundException,
-  UnauthorizedException,
-} from '@/errors/http-errors';
+import { ConflictException, UnauthorizedException } from '@/errors/http-errors';
 import { generateToken } from '@/lib/jwt';
 import type { AuthUserResponse } from '@/types/user';
 import type { LoginInputT, RegisterInputT } from '@/validators/auth.validator';
@@ -47,7 +43,7 @@ export class AuthService {
       email: savedUser.email,
     });
 
-    return this.toPublicUser(savedUser, jwtToken);
+    return this.buildAuthResponse(savedUser, jwtToken);
   }
 
   static async login(input: LoginInputT): Promise<AuthUserResponse> {
@@ -76,10 +72,13 @@ export class AuthService {
       email: user.email,
     });
 
-    return this.toPublicUser(user, jwtToken);
+    return this.buildAuthResponse(user, jwtToken);
   }
 
-  private static toPublicUser(user: User, token: string): AuthUserResponse {
+  private static buildAuthResponse(
+    user: User,
+    token: string
+  ): AuthUserResponse {
     return {
       user: {
         id: user.id,
