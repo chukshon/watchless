@@ -15,4 +15,10 @@ export const registerSchema = z.object({
   name: z.string().optional(),
 });
 
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+});
+
 export type RegisterInputT = z.infer<typeof registerSchema>;
+export type LoginInputT = z.infer<typeof loginSchema>;

@@ -1,10 +1,15 @@
 import crypto from 'crypto';
 import { AppDataSource } from '@/database/data-source';
 import { User } from '@/database/entities/user.entity';
-import { ConflictException } from '@/errors/http-errors';
+import {
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@/errors/http-errors';
 import { generateToken } from '@/lib/jwt';
 import type { AuthUserResponse } from '@/types/user';
-import type { RegisterInputT } from '@/validators/auth.validator';
+import type { LoginInputT, RegisterInputT } from '@/validators/auth.validator';
+import { logger } from '@/lib/logger';
 
 export class AuthService {
   private static readonly userRepository = AppDataSource.getRepository(User);
@@ -15,7 +20,8 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException('Email already in use');
+      logger.error(`Email already in use: ${input.email}`);
+      throw new ConflictException('Invalid Credentials');
     }
 
     const verificationToken = crypto.randomBytes(32).toString('hex');
@@ -42,6 +48,35 @@ export class AuthService {
     });
 
     return this.toPublicUser(savedUser, jwtToken);
+  }
+
+  static async login(input: LoginInputT): Promise<AuthUserResponse> {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.email = :email', { email: input.email.toLowerCase() })
+      .getOne();
+
+    if (!user) {
+      logger.error(`User not found: ${input.email}`);
+      throw new UnauthorizedException('Invalid Credentials');
+    }
+
+    const isPasswordValid = await user.comparePassword(input.password);
+    if (!isPasswordValid) {
+      logger.error(`Invalid password for user: ${input.email}`);
+      throw new UnauthorizedException('Invalid Credentials');
+    }
+
+    user.lastLogin = new Date();
+    await this.userRepository.save(user);
+
+    const jwtToken = generateToken({
+      userId: user.id,
+      email: user.email,
+    });
+
+    return this.toPublicUser(user, jwtToken);
   }
 
   private static toPublicUser(user: User, token: string): AuthUserResponse {
