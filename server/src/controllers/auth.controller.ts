@@ -1,9 +1,13 @@
 import { HTTPSTATUS } from '@/constants/http-status-code';
-import { getSuccessResponse } from '@/types/api-response';
-import type { LoginInputT, RegisterInputT } from '@/validators/auth.validator';
-
 import { asyncHandler } from '@/middleware/async-handler.middleware';
+import type { ValidatedRequest } from '@/middleware/validate-request.middleware';
 import { AuthService } from '@/services/auth.service';
+import { getSuccessResponse } from '@/types/api-response';
+import type {
+  LoginInputT,
+  RegisterInputT,
+  VerifyEmailQueryT,
+} from '@/validators/auth.validator';
 
 export class AuthController {
   static register = asyncHandler(async (req, res) => {
@@ -19,8 +23,15 @@ export class AuthController {
   static login = asyncHandler(async (req, res) => {
     const loggedInUser = await AuthService.login(req.body as LoginInputT);
 
-    res
-      .status(HTTPSTATUS.OK)
-      .json(getSuccessResponse(loggedInUser, 'User logged in successfully'));
+    res.json(getSuccessResponse(loggedInUser, 'User logged in successfully'));
+  });
+
+  static verifyEmail = asyncHandler(async (req, res) => {
+    const { token } = (req as ValidatedRequest)
+      .validatedQuery as VerifyEmailQueryT;
+
+    const result = await AuthService.verifyEmail(token);
+
+    res.json(getSuccessResponse(result));
   });
 }

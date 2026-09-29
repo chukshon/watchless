@@ -2,7 +2,13 @@ import crypto from 'crypto';
 import { logger } from '@/lib/logger';
 import { generateToken } from '@/lib/jwt';
 
-import { ConflictException, UnauthorizedException } from '@/errors/http-errors';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@/errors/http-errors';
+
 import type { AuthUserResponse } from '@/types/user';
 import type { LoginInputT, RegisterInputT } from '@/validators/auth.validator';
 
@@ -80,6 +86,39 @@ export class AuthService {
     });
 
     return this.buildAuthResponse(user, jwtToken);
+  }
+
+  static async verifyEmail(token: string) {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.emailVerificationToken')
+      .addSelect('user.emailVerificationTokenExpires')
+      .where('user.emailVerificationToken = :token', { token })
+      .getOne();
+
+    if (!user) {
+      logger.error(`Invalid verification token: ${token}`);
+      throw new NotFoundException('Invalid verification token');
+    }
+
+    if (
+      !user.emailVerificationTokenExpires ||
+      user.emailVerificationTokenExpires < new Date()
+    ) {
+      logger.error(`Verification token expired: ${token}`);
+      throw new BadRequestException('Verification token expired');
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = null;
+    user.emailVerificationTokenExpires = null;
+
+    // Todo: Send welcome email
+    await this.userRepository.save(user);
+
+    return {
+      message: 'Email verified successfully',
+    };
   }
 
   private static buildAuthResponse(

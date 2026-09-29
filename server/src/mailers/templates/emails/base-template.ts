@@ -221,7 +221,7 @@ export const generateBaseTemplate = (
                 <path d="M3 10L12 14L21 10" opacity="0.8" />
               </svg>
             </div>
-            <h1>AI Video Summarizer</h1>
+            <h1>Watchless</h1>
           </div>
           
           <div class="content">
@@ -231,7 +231,7 @@ export const generateBaseTemplate = (
           </div>
           
           <div class="footer">
-            <p>© ${new Date().getFullYear()} AI Video Summarizer. All rights reserved.</p>
+            <p>© ${new Date().getFullYear()} Watchless. All rights reserved.</p>
             <p>If you didn't request this email, please ignore it.</p>
             <div class="social-links">
               <a href="#" class="social-link">Twitter</a>
