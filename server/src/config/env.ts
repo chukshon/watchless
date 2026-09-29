@@ -22,6 +22,8 @@ const envSchema = z.object({
 
   RESEND_API_KEY: z.string().min(1),
   RESEND_EMAIL_SENDER: z.string().email(),
+
+  FRONTEND_URL: z.url(),
 });
 
 export const env = createEnv(envSchema);

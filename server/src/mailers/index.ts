@@ -1,13 +1,6 @@
 import { env } from '@/config/env';
 import { RESEND_CLIENT } from '@/lib/resend';
-
-type ParamsT = {
-  to: string | string[];
-  subject: string;
-  text: string;
-  html: string;
-  from?: string;
-};
+import { SendEmailParamsT } from '@/types/email';
 
 const MAILER_SENDER = `Watchless <${env.RESEND_EMAIL_SENDER}>`;
 
@@ -17,7 +10,7 @@ export const sendEmail = async ({
   text,
   html,
   from = MAILER_SENDER,
-}: ParamsT) => {
+}: SendEmailParamsT) => {
   return await RESEND_CLIENT.emails.send({
     from,
     to: Array.isArray(to) ? to : [to],
