@@ -1,9 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
-import { env } from '../config/env';
-import { HTTPSTATUS } from '../constants/http-status-code';
-import { AppError } from '../errors/app-error';
-import { getErrorResponse } from '../lib/api-response';
-import { logger } from '../lib/logger';
+import { env } from '@/config/env';
+import { HTTPSTATUS } from '@/constants/http-status-code';
+import { AppError } from '@/errors/app-error';
+import { getErrorResponse } from '@/lib/api-response';
+import { logger } from '@/lib/logger';
 
 export const errorMiddleware = (
   err: Error,

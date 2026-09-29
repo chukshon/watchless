@@ -1,11 +1,14 @@
-import { AppError } from './app-error';
-import { HTTPSTATUS, HttpStatusCodeType } from '../constants/http-status-code';
+import { AppError } from '@/errors/app-error';
+import {
+  HTTPSTATUS,
+  type HttpStatusCodeType,
+} from '@/constants/http-status-code';
 
 export class HttpException extends AppError {
   constructor(
     message = 'Http Exception error',
     statusCode: HttpStatusCodeType,
-    errorCode?: string
+    errorCode?: string,
   ) {
     super(message, statusCode, errorCode);
   }
@@ -51,7 +54,7 @@ export class UnprocessableEntityException extends AppError {
   constructor(
     message = 'Unprocessable entity',
     errorCode?: string,
-    details?: Record<string, unknown>
+    details?: Record<string, unknown>,
   ) {
     super(message, HTTPSTATUS.UNPROCESSABLE_ENTITY, errorCode, details);
   }

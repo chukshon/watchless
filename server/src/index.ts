@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 
-import app from './app';
-import { env } from './config/env';
-import { AppDataSource } from './database/data-source';
-import { logger } from './lib/logger';
+import app from '@/app';
+import { env } from '@/config/env';
+import { AppDataSource } from '@/database/data-source';
+import { logger } from '@/lib/logger';
 
 async function bootstrap() {
   try {

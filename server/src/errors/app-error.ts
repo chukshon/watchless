@@ -1,4 +1,7 @@
-import { HTTPSTATUS, type HttpStatusCodeType } from '../constants/http-status-code';
+import {
+  HTTPSTATUS,
+  type HttpStatusCodeType,
+} from '@/constants/http-status-code';
 
 export class AppError extends Error {
   readonly statusCode: HttpStatusCodeType;
