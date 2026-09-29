@@ -1,4 +1,4 @@
-export type VideoInfoT = {
+export type YoutubeVideoInfoT = {
   title: string;
   videoUrl: string;
   description: string;

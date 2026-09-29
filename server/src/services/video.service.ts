@@ -7,7 +7,7 @@ import ffmpeg from '@ffmpeg-installer/ffmpeg';
 
 import { logger } from '@/lib/logger';
 
-import { VideoInfoT, YoutubeDlOutputT } from '@/types/video';
+import { YoutubeVideoInfoT, YoutubeDlOutputT } from '@/types/video';
 
 import {
   BadRequestException,
@@ -27,10 +27,12 @@ export class VideoService {
     await mkdir(VideoService.AUDIO_DIR, { recursive: true });
   }
 
-  static async getVideoInfo(url: string): Promise<VideoInfoT> {
+  static async getYoutubeVideoInfo(
+    youtubeUrl: string
+  ): Promise<YoutubeVideoInfoT> {
     try {
-      // Get Video Info from youtube-dl
-      const rawInfo = await youtubeDl(url, {
+      // Get youtube Video Info from youtube-dl
+      const rawInfo = await youtubeDl(youtubeUrl, {
         dumpSingleJson: true,
         noWarnings: true,
         preferFreeFormats: true,
@@ -45,14 +47,14 @@ export class VideoService {
 
       // get the best quality thumbnail
       const thumbnail =
-        info.thumbnails ||
+        info.thumbnail ||
         (info as any).thumbnails?.[0]?.url ||
-        `https://i.ytimg.com/vi/${ytdl.getVideoID(url)}/maxresdefault.jpg`;
+        `https://i.ytimg.com/vi/${ytdl.getVideoID(youtubeUrl)}/maxresdefault.jpg`;
 
       return {
         title: info.title,
         description: info.description || '',
-        videoUrl: url,
+        videoUrl: youtubeUrl,
         duration: info.duration,
         author: info.uploader,
         thumbnail,
