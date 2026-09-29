@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -6,9 +5,14 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+import bcrypt from 'bcrypt';
+
+import { Video } from '@/database/entities/video.entity';
 
 const SALT_ROUNDS = 12;
 
@@ -48,6 +52,9 @@ export class User {
 
   @Column({ name: 'last_login', type: 'timestamptz', nullable: true })
   lastLogin: Date | null;
+
+  @OneToMany(() => Video, (video) => video.user)
+  videos: Video[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
