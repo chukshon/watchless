@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import { sendEmail } from '@/mailers';
 import { SendEmailParamsT } from '@/types/email';
 import { generateEmailVerificationTemplate } from '@/mailers/templates/emails/email-verification.template';
+import { InternalServerErrorException } from '@/errors/http-errors';
 
 export class EmailService {
   static async sendEmailVerification(email: string, token: string) {
@@ -20,11 +21,14 @@ export class EmailService {
       };
 
       await sendEmail(emailParams);
+      logger.info(`Email verification email sent to ${email}`);
     } catch (error) {
       logger.error(
         `Failed to send email verification email to ${email}: ${error}`
       );
-      throw new Error('Failed to send email verification email');
+      throw new InternalServerErrorException(
+        'Failed to send email verification email'
+      );
     }
   }
 }

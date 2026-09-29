@@ -6,6 +6,7 @@ import { generateToken } from '@/lib/jwt';
 import type { AuthUserResponse } from '@/types/user';
 import type { LoginInputT, RegisterInputT } from '@/validators/auth.validator';
 import { logger } from '@/lib/logger';
+import { EmailService } from '@/services/email.service';
 
 export class AuthService {
   private static readonly userRepository = AppDataSource.getRepository(User);
@@ -37,6 +38,10 @@ export class AuthService {
     const savedUser = await this.userRepository.save(user);
 
     // TODO: Send email verification email
+    await EmailService.sendEmailVerification(
+      savedUser.email,
+      verificationToken
+    );
 
     const jwtToken = generateToken({
       userId: savedUser.id,
