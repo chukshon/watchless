@@ -1,4 +1,4 @@
-import { BaseTemplateParamsT, EmailVerificationParamsT } from '@/types/email';
+import { BaseTemplateParamsT } from '@/types/email';
 
 export const generateBaseTemplate = (
   baseTemplateParams: BaseTemplateParamsT

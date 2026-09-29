@@ -1,8 +1,9 @@
 import { HTTPSTATUS } from '@/constants/http-status-code';
-import { asyncHandler } from '@/middleware/async-handler.middleware';
-import { AuthService } from '@/services/auth.service';
 import { getSuccessResponse } from '@/types/api-response';
 import type { LoginInputT, RegisterInputT } from '@/validators/auth.validator';
+
+import { asyncHandler } from '@/middleware/async-handler.middleware';
+import { AuthService } from '@/services/auth.service';
 
 export class AuthController {
   static register = asyncHandler(async (req, res) => {

@@ -1,11 +1,13 @@
 import crypto from 'crypto';
-import { AppDataSource } from '@/database/data-source';
-import { User } from '@/database/entities/user.entity';
-import { ConflictException, UnauthorizedException } from '@/errors/http-errors';
+import { logger } from '@/lib/logger';
 import { generateToken } from '@/lib/jwt';
+
+import { ConflictException, UnauthorizedException } from '@/errors/http-errors';
 import type { AuthUserResponse } from '@/types/user';
 import type { LoginInputT, RegisterInputT } from '@/validators/auth.validator';
-import { logger } from '@/lib/logger';
+
+import { AppDataSource } from '@/database/data-source';
+import { User } from '@/database/entities/user.entity';
 import { EmailService } from '@/services/email.service';
 
 export class AuthService {

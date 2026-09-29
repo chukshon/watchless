@@ -1,9 +1,12 @@
 import { env } from '@/config/env';
+import { InternalServerErrorException } from '@/errors/http-errors';
+
 import { logger } from '@/lib/logger';
 import { sendEmail } from '@/mailers';
+
 import { SendEmailParamsT } from '@/types/email';
+
 import { generateEmailVerificationTemplate } from '@/mailers/templates/emails/email-verification.template';
-import { InternalServerErrorException } from '@/errors/http-errors';
 
 export class EmailService {
   static async sendEmailVerification(email: string, token: string) {
