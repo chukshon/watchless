@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getSuccessResponse } from '@/lib/api-response';
+import { getSuccessResponse } from '@/types/api-response';
 
 const healthRoutes = Router();
 
@@ -10,8 +10,8 @@ healthRoutes.get('/', (_req, res) => {
         status: 'ok',
         timestamp: new Date().toISOString(),
       },
-      'Service is healthy',
-    ),
+      'Service is healthy'
+    )
   );
 });
 

@@ -2,14 +2,14 @@ import type { NextFunction, Request, Response } from 'express';
 import { env } from '@/config/env';
 import { HTTPSTATUS } from '@/constants/http-status-code';
 import { AppError } from '@/errors/app-error';
-import { getErrorResponse } from '@/lib/api-response';
+import { getErrorResponse } from '@/types/api-response';
 import { logger } from '@/lib/logger';
 
 export const errorMiddleware = (
   err: Error,
   _req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ): void => {
   if (res.headersSent) {
     next(err);
@@ -45,7 +45,5 @@ export const errorMiddleware = (
   const message =
     env.NODE_ENV === 'production' ? 'Internal server error' : err.message;
 
-  res
-    .status(HTTPSTATUS.INTERNAL_SERVER_ERROR)
-    .json(getErrorResponse(message));
+  res.status(HTTPSTATUS.INTERNAL_SERVER_ERROR).json(getErrorResponse(message));
 };

@@ -16,6 +16,9 @@ const envSchema = z.object({
   DB_NAME: z.string().min(1).default('watchless'),
   DB_USER: z.string().min(1).default('watchless'),
   DB_PASSWORD: z.string().min(1).default('watchless'),
+
+  JWT_SECRET: z.string().min(32),
+  JWT_EXPIRES_IN: z.string().min(1).default('7d'),
 });
 
 export const env = createEnv(envSchema);
