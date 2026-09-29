@@ -6,8 +6,8 @@ import { sendEmail } from '@/mailers';
 
 import { SendEmailParamsT } from '@/types/email';
 
-import { generateEmailVerificationTemplate } from '@/mailers/templates/emails/email-verification.template';
-import { generateWelcomeEmailTemplate } from '@/mailers/templates/emails/welcome-email-template';
+import { generateEmailVerificationTemplate } from '@/mailers/templates/email-verification.template';
+import { generateWelcomeEmailTemplate } from '@/mailers/templates/welcome-email-template';
 
 export class EmailService {
   static async sendEmailVerification(email: string, token: string) {

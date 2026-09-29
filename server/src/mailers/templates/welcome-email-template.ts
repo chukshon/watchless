@@ -1,4 +1,4 @@
-import { generateBaseTemplate } from '@/mailers/templates/emails/base-template';
+import { generateBaseTemplate } from '@/mailers/templates/base-template';
 import type { BaseTemplateParamsT } from '@/types/email';
 
 export const generateWelcomeEmailTemplate = (
