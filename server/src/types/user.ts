@@ -8,4 +8,7 @@ export type UserT = {
   updatedAt: Date;
 };
 
-export type AuthUserResponse = UserT & { token: string };
+export type AuthUserResponse = {
+  user: UserT;
+  token: string;
+};
