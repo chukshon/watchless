@@ -3,6 +3,7 @@ import 'reflect-metadata';
 import { join } from 'path';
 import { DataSource } from 'typeorm';
 import { env } from '../config/env';
+import { User } from './entities/user.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -13,6 +14,6 @@ export const AppDataSource = new DataSource({
   database: env.DB_NAME,
   synchronize: false,
   logging: env.NODE_ENV === 'development',
-  entities: [join(__dirname, 'entities', '**', '*.{ts,js}')],
+  entities: [User],
   migrations: [join(__dirname, 'migrations', '**', '*.{ts,js}')],
 });
