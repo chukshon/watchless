@@ -6,13 +6,14 @@ import { getSuccessResponse } from '@/types/api-response';
 import type {
   LoginInputT,
   RegisterInputT,
+  ResendEmailVerificationInputT,
   VerifyEmailQueryT,
 } from '@/validators/auth.validator';
 
 export class AuthController {
   static register = asyncHandler(async (req, res) => {
     const registeredUser = await AuthService.register(
-      req.body as RegisterInputT
+      req.body as RegisterInputT,
     );
 
     res
@@ -33,5 +34,12 @@ export class AuthController {
     const result = await AuthService.verifyEmail(token);
 
     res.json(getSuccessResponse(result));
+  });
+
+  static resendEmailVerification = asyncHandler(async (req, res) => {
+    const { email } = req.body as ResendEmailVerificationInputT;
+    const result = await AuthService.resendEmailVerification(email);
+
+    res.json(getSuccessResponse(result, result.message));
   });
 }

@@ -113,11 +113,49 @@ export class AuthService {
     user.emailVerificationToken = null;
     user.emailVerificationTokenExpires = null;
 
-    // Todo: Send welcome email
     await this.userRepository.save(user);
+
+    await EmailService.sendWelcomeEmail(user.email, user.name);
 
     return {
       message: 'Email verified successfully',
+    };
+  }
+
+  static async resendEmailVerification(email: string) {
+    const user = await this.userRepository.findOne({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!user) {
+      logger.error(`User not found: ${email}`);
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.isEmailVerified) {
+      logger.error(`Email already verified: ${email}`);
+      throw new BadRequestException('Email already verified');
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiresIn = new Date();
+    verificationTokenExpiresIn.setHours(
+      verificationTokenExpiresIn.getHours() + 24,
+    );
+
+    // Use update() so select:false columns (e.g. password) aren't wiped on save
+    await this.userRepository.update(
+      { id: user.id },
+      {
+        emailVerificationToken: verificationToken,
+        emailVerificationTokenExpires: verificationTokenExpiresIn,
+      },
+    );
+
+    await EmailService.sendEmailVerification(user.email, verificationToken);
+
+    return {
+      message: 'Verification email sent',
     };
   }
 
