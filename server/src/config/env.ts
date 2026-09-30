@@ -24,6 +24,10 @@ const envSchema = z.object({
   RESEND_EMAIL_SENDER: z.string().email(),
 
   FRONTEND_URL: z.url(),
+
+  GCS_BUCKET_NAME: z.string().min(1),
+  GCS_LOCATION: z.string().min(1),
+  GCS_STORAGE_CLASS: z.string().min(1),
 });
 
 export const env = createEnv(envSchema);
