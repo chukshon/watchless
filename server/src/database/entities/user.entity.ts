@@ -53,14 +53,14 @@ export class User {
   @Column({ name: 'last_login', type: 'timestamptz', nullable: true })
   lastLogin: Date | null;
 
-  @OneToMany(() => Video, (video) => video.user)
-  videos: Video[];
-
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
+
+  @OneToMany(() => Video, (video) => video.user)
+  videos: Video[];
 
   @BeforeInsert()
   async hashPasswordOnInsert(): Promise<void> {

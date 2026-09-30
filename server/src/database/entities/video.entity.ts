@@ -3,11 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '@/database/entities/user.entity';
 import { VideoStatus } from '@/constants/video';
+import { Transcription } from '@/database/entities/transcription.entity';
+import { User } from '@/database/entities/user.entity';
 
 @Entity({ name: 'videos' })
 export class Video {
@@ -39,15 +41,18 @@ export class Video {
   })
   status: VideoStatus;
 
+  @CreateDateColumn({ type: 'timestamptz' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamptz' })
+  updatedAt: Date;
+
   @ManyToOne(() => User, (user) => user.videos, {
     onDelete: 'CASCADE',
     nullable: false,
   })
   user: User;
 
-  @CreateDateColumn({ type: 'timestamptz' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt: Date;
+  @OneToOne(() => Transcription, (transcription) => transcription.video)
+  transcription: Transcription;
 }
