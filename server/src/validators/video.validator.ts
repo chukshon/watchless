@@ -13,6 +13,12 @@ export const getYoutubeVideoInfoSchema = z.object({
   youtubeUrl: youtubeUrlSchema,
 });
 
+export const downloadAudioSchema = z.object({
+  youtubeUrl: youtubeUrlSchema,
+});
+
 export type GetYoutubeVideoInfoInputT = z.infer<
   typeof getYoutubeVideoInfoSchema
 >;
+
+export type DownloadAudioInputT = z.infer<typeof downloadAudioSchema>;

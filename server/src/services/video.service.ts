@@ -74,4 +74,44 @@ export class VideoService {
       throw new InternalServerErrorException('Failed to get video info');
     }
   }
+
+  static async downloadAudio(youtubeUrl: string): Promise<string> {
+    try {
+      await this.ensureDirectoryExists();
+
+      // extract video from url
+      const videoId = ytdl.getVideoID(youtubeUrl);
+      const audioPath = path.join(this.AUDIO_DIR, `${videoId}.mp3`);
+
+      // download audio
+      await youtubeDl(youtubeUrl, {
+        output: audioPath,
+        audioFormat: 'mp3',
+        audioQuality: 0,
+        extractAudio: true,
+        noWarnings: true,
+        preferFreeFormats: true,
+        ffmpegLocation: ffmpeg.path,
+      });
+
+      const fileStats = await import('fs/promises').then((fs) =>
+        fs.stat(audioPath)
+      );
+
+      if (fileStats.size === 0) {
+        throw new InternalServerErrorException('Failed to download audio');
+      }
+
+      return audioPath;
+    } catch (error) {
+      logger.error('Failed to download audio', { error });
+      if (error instanceof Error) {
+        if (error.message.includes('ffmpeg')) {
+          throw new ForbiddenException('Failed to download audio');
+        }
+        throw new InternalServerErrorException('Failed to download audio');
+      }
+      throw new InternalServerErrorException('Failed to download audio');
+    }
+  }
 }
