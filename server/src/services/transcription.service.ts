@@ -1,6 +1,7 @@
 import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
 import { logger } from '@/lib/logger';
+import { env } from '@/config/env';
 import {
   gcsBucketName,
   gcsLocation,
@@ -16,6 +17,7 @@ import {
 
 import type { TranscriptionResultT } from '@/types/transcription';
 import { unlink } from 'fs/promises';
+import { protos } from '@google-cloud/speech';
 
 export class TranscriptionService {
   static async ensureBucketExists() {
@@ -157,5 +159,117 @@ export class TranscriptionService {
           );
         });
     });
+  }
+
+  static async transcribe(audioPath: string): Promise<TranscriptionResultT> {
+    let wavepath: string | undefined;
+    let gcsUrl: string | undefined;
+
+    try {
+      if (!audioPath) {
+        throw new BadRequestException('Audio path is required');
+      }
+
+      // Ensure the bucket exists
+      await this.ensureBucketExists();
+      // First convert the file to wav if it's not already in wav format
+      wavepath = await this.convertToWav(audioPath);
+      logger.info(`Audio converted to WAV successfully to ${wavepath}`);
+
+      // Detect the content type of the audio(i.e music or speech)
+      const contentType = await this.detectContentType(wavepath);
+      logger.info(`Content type detected: ${contentType}`);
+
+      if (contentType === 'music') {
+        logger.info(`Audio is music, skipping transcription`);
+        await unlink(wavepath).catch(() => {});
+        return {
+          text: '[MUSIC CONTENT DETECTED]',
+          confidence: 1.0,
+          isMusic: true,
+        };
+      }
+
+      // Upload the audio to google cloud storage
+      gcsUrl = await this.uploadToGcs(wavepath);
+      logger.info(`Audio uploaded to GCS successfully to ${gcsUrl}`);
+
+      // configure transcription request
+      const transcriptionRequest: protos.google.cloud.speech.v1.ILongRunningRecognizeRequest =
+        {
+          audio: {
+            uri: gcsUrl,
+          },
+          config: {
+            encoding:
+              protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding
+                .LINEAR16,
+            sampleRateHertz: 16000,
+            languageCode: env.GCS_LANGUAGE_CODE,
+            model: 'default',
+            enableAutomaticPunctuation: true,
+            useEnhanced: true,
+            metadata: {
+              interactionType: 'DICTATION',
+              microphoneDistance: 'NEARFIELD',
+              recordingDeviceType: 'SMARTPHONE',
+            },
+
+            enableWordTimeOffsets: true,
+            enableWordConfidence: true,
+            maxAlternatives: 1,
+            profanityFilter: true,
+            adaptation: {
+              phraseSetReferences: [],
+              customClasses: [],
+            },
+            audioChannelCount: 1,
+            enableSeparateRecognitionPerChannel: false,
+            speechContexts: [
+              {
+                phrases: ['video', 'youtube', 'subscribe', 'like', 'comment'],
+                boost: 20,
+              },
+            ],
+          },
+        };
+      const [operation] =
+        await speechClient.longRunningRecognize(transcriptionRequest);
+      const [response] = await operation.promise();
+      logger.info(`Transcription response: ${JSON.stringify(response)}`);
+
+      //   clean up files
+      await Promise.all([
+        wavepath ? unlink(wavepath).catch(() => {}) : Promise.resolve(),
+        gcsUrl ? this.deleteFromGcs(gcsUrl) : Promise.resolve(),
+      ]);
+
+      if (!response.results || response.results.length === 0) {
+        throw new BadRequestException('No transcription results found');
+      }
+
+      const transcription = response.results
+        .map((result) => result.alternatives?.[0]?.transcript || '')
+        .join(' ');
+
+      const confidence =
+        response.results.reduce(
+          (sum, result) => sum + (result.alternatives?.[0]?.confidence || 0),
+          0
+        ) / response.results.length;
+
+      if (!transcription.trim()) {
+        throw new BadRequestException('No transcription results found');
+      }
+
+      return {
+        text: transcription,
+        confidence: confidence,
+        isMusic: false,
+      };
+    } catch (error) {
+      logger.error(`error transcribing: ${audioPath}`, { error });
+      throw new InternalServerErrorException('Failed to transcribe audio');
+    }
   }
 }

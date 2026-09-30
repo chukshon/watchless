@@ -28,6 +28,7 @@ const envSchema = z.object({
   GCS_BUCKET_NAME: z.string().min(1),
   GCS_LOCATION: z.string().min(1),
   GCS_STORAGE_CLASS: z.string().min(1),
+  GCS_LANGUAGE_CODE: z.string().min(1).default('en-US'),
 });
 
 export const env = createEnv(envSchema);
