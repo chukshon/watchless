@@ -1,6 +1,8 @@
 import path from 'path';
-import ffmpeg from 'fluent-ffmpeg';
 import { unlink } from 'fs/promises';
+
+import ffmpeg from 'fluent-ffmpeg';
+
 import { protos } from '@google-cloud/speech';
 
 import { env } from '@/config/env';
