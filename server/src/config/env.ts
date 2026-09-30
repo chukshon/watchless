@@ -29,6 +29,9 @@ const envSchema = z.object({
   GCS_LOCATION: z.string().min(1),
   GCS_STORAGE_CLASS: z.string().min(1),
   GCS_LANGUAGE_CODE: z.string().min(1).default('en-US'),
+
+  REDIS_HOST: z.string().min(1).default('localhost'),
+  REDIS_PORT: z.coerce.number().int().positive().default(6379),
 });
 
 export const env = createEnv(envSchema);
