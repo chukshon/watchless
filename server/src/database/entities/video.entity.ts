@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { VideoStatus } from '@/constants/video';
+import { Analysis } from '@/database/entities/analysis.entity';
 import { Transcription } from '@/database/entities/transcription.entity';
 import { User } from '@/database/entities/user.entity';
 
@@ -54,5 +55,8 @@ export class Video {
   user: User;
 
   @OneToOne(() => Transcription, (transcription) => transcription.video)
-  transcription: Transcription;
+  transcription: Transcription | null;
+
+  @OneToOne(() => Analysis, (analysis) => analysis.video)
+  analysis: Analysis | null;
 }
