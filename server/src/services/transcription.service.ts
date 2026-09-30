@@ -1,7 +1,11 @@
 import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
-import { logger } from '@/lib/logger';
+import { unlink } from 'fs/promises';
+import { protos } from '@google-cloud/speech';
+
 import { env } from '@/config/env';
+
+import { logger } from '@/lib/logger';
 import {
   gcsBucketName,
   gcsLocation,
@@ -16,8 +20,6 @@ import {
 } from '@/errors/http-errors';
 
 import type { TranscriptionResultT } from '@/types/transcription';
-import { unlink } from 'fs/promises';
-import { protos } from '@google-cloud/speech';
 
 export class TranscriptionService {
   static async ensureBucketExists() {
