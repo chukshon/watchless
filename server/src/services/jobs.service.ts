@@ -1,18 +1,20 @@
 import Queue from 'bull';
+import { unlink } from 'fs/promises';
 
 import { env } from '@/config/env';
 
 import { logger } from '@/lib/logger';
+import { VideoStatus } from '@/constants/video';
 
 import { AppDataSource } from '@/database/data-source';
 import { Transcription } from '@/database/entities/transcription.entity';
 import { Video } from '@/database/entities/video.entity';
 import { Analysis } from '@/database/entities/analysis.entity';
 import { User } from '@/database/entities/user.entity';
+
 import { TranscriptionService } from './transcription.service';
-import { VideoStatus } from '@/constants/video';
+
 import { VideoService } from './video.service';
-import { unlink } from 'fs/promises';
 
 export class JobsService {
   private static transcriptionQueue: Queue.Queue;
