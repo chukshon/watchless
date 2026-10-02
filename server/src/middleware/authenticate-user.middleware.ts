@@ -3,8 +3,6 @@ import { UnauthorizedException } from '@/errors/http-errors';
 import { TokenPayload, verifyToken } from '@/lib/jwt';
 
 import { logger } from '@/lib/logger';
-import { AppDataSource } from '@/database/data-source';
-import { User } from '@/database/entities/user.entity';
 
 const parseAuthorizationHeader = (value: string | undefined): string => {
   if (!value) {
@@ -31,30 +29,6 @@ const validateAccessTokenPayload = (payload: TokenPayload): TokenPayload => {
   };
 };
 
-async function authenticateApiKey(
-  userId: string,
-  req: Request,
-  _res: Response
-) {
-  const existingUser = await AppDataSource.getRepository(User).findOne({
-    where: {
-      id: userId,
-    },
-    select: {
-      id: true,
-      email: true,
-    },
-  });
-
-  if (!existingUser) {
-    logger.error('User not found', { userId });
-    throw new UnauthorizedException('User not found');
-  }
-  req.user = { userId: existingUser.id, email: existingUser.email };
-
-  return existingUser;
-}
-
 export const authenticateUser: RequestHandler = async (
   req: Request,
   _res: Response,
@@ -62,11 +36,6 @@ export const authenticateUser: RequestHandler = async (
 ) => {
   try {
     const token = parseAuthorizationHeader(req.headers.authorization).trim();
-
-    if (token.startsWith('xi_')) {
-      await authenticateApiKey(token, req, _res);
-      return next();
-    }
 
     const payload = verifyToken(token);
     const user = validateAccessTokenPayload(payload);
