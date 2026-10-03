@@ -30,6 +30,9 @@ const envSchema = z.object({
   GCS_STORAGE_CLASS: z.string().min(1),
   GCS_LANGUAGE_CODE: z.string().min(1).default('en-US'),
 
+  GOOGLE_API_KEY: z.string().min(1),
+  GOOGLE_AI_MODEL: z.string().min(1).default('gemini-pro'),
+
   REDIS_HOST: z.string().min(1).default('localhost'),
   REDIS_PORT: z.coerce.number().int().positive().default(6379),
 });
