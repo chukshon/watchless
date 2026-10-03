@@ -140,7 +140,7 @@ export class AuthService {
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationTokenExpiresIn = new Date();
     verificationTokenExpiresIn.setHours(
-      verificationTokenExpiresIn.getHours() + 24,
+      verificationTokenExpiresIn.getHours() + 24
     );
 
     // Use update() so select:false columns (e.g. password) aren't wiped on save
@@ -149,7 +149,7 @@ export class AuthService {
       {
         emailVerificationToken: verificationToken,
         emailVerificationTokenExpires: verificationTokenExpiresIn,
-      },
+      }
     );
 
     await EmailService.sendEmailVerification(user.email, verificationToken);
@@ -157,6 +157,20 @@ export class AuthService {
     return {
       message: 'Verification email sent',
     };
+  }
+
+  static async getUserById(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['videos'],
+    });
+
+    if (!user) {
+      logger.error(`User not found: ${id}`);
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 
   private static buildAuthResponse(
