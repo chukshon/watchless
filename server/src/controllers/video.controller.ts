@@ -1,5 +1,6 @@
 import { HTTPSTATUS } from '@/constants/http-status-code';
 import { asyncHandler } from '@/middleware/async-handler.middleware';
+import { AuthService } from '@/services/auth.service';
 import { VideoService } from '@/services/video.service';
 import { getSuccessResponse } from '@/types/api-response';
 import type { YoutubeUrlInputT } from '@/validators/shared.validator';
@@ -35,5 +36,9 @@ export class VideoController {
 
   static transcribeAudio = asyncHandler(async (req, res) => {
     const { youtubeUrl } = req.body as YoutubeUrlInputT;
+    const userId = req.user?.userId;
+
+    const user = await AuthService.getUserById(userId!);
+    const videoInfo = await VideoService.getYoutubeVideoInfo(youtubeUrl);
   });
 }

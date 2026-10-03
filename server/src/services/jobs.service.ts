@@ -11,8 +11,10 @@ import { Video } from '@/database/entities/video.entity';
 import { Analysis } from '@/database/entities/analysis.entity';
 import { User } from '@/database/entities/user.entity';
 
-import { TranscriptionService } from './transcription.service';
-import { VideoService } from './video.service';
+import { TranscriptionService } from '@/services/transcription.service';
+import { VideoService } from '@/services/video.service';
+import { AiService } from '@/services/ai.service';
+import { NotFoundException } from '@/errors/http-errors';
 
 export class JobsService {
   private static transcriptionQueue: Queue.Queue;
@@ -136,10 +138,102 @@ export class JobsService {
             transcription: transcriptionResult,
           };
         }
+
+        // Analyze transcription with AI
+        const aiAnalysisResult = await AiService.analyzeTranscription(
+          transcriptionResult.text,
+          videoInfo
+        );
+
+        // Check if analysis already exists and update or create new one
+        let analysis = await this.analysisRepository.findOne({
+          where: {
+            video: { id: video.id },
+          },
+        });
+        if (analysis) {
+          // Update existing analysis
+          Object.assign(analysis, aiAnalysisResult);
+        } else {
+          analysis = new Analysis();
+          Object.assign(analysis, aiAnalysisResult);
+          analysis.video = video;
+        }
+        await this.analysisRepository.save(analysis);
+
+        video.status = VideoStatus.COMPLETED;
+        await this.videoRepository.save(video);
+
+        job.progress(100);
+
+        return {
+          transcription: transcriptionResult,
+          analysis: aiAnalysisResult,
+          status: VideoStatus.COMPLETED,
+          videoInfo,
+        };
       } catch (error) {
+        // Clean up audio file
+        if (audioPath) {
+          await unlink(audioPath).catch(() => {});
+        }
+
+        // Update video status to failed
+        if (video) {
+          video.status = VideoStatus.FAILED;
+          await this.videoRepository.save(video);
+        }
+
         logger.error('Error processing transcription job', { error });
-        throw new Error('Failed to process transcription job');
+
+        if (
+          error instanceof Error &&
+          (error.message.includes('No speech detected') ||
+            error.message.includes('This video is private') ||
+            error.message.includes('This video is no longer available'))
+        ) {
+          return {
+            error: error.message,
+            status: VideoStatus.FAILED,
+            final: true,
+          };
+        }
+
+        throw error;
       }
     });
+
+    this.transcriptionQueue.on('completed', async (job, result) => {
+      try {
+        const user = await this.userRepository.findOne({
+          where: { id: job.data.userId },
+        });
+
+        if (user && result.videoInfo) {
+          // TODO: Send Job completion email
+        }
+      } catch (error) {
+        logger.error('Error sending job completion email', {
+          error,
+        });
+      }
+    });
+
+    this.transcriptionQueue.on('failed', async (job, error) => {
+      logger.error('Job Transcription failed', {
+        error,
+        jobId: job.id,
+        jobData: job.data,
+      });
+    });
+
+    this.transcriptionQueue.on('error', (error) => {
+      logger.error('Error processing transcription job', { error });
+    });
+
+    // Clean up stuck jobs
+    this.transcriptionQueue.clean(24 * 3600 * 1000, 'delayed');
+    this.transcriptionQueue.clean(24 * 3600 * 1000, 'wait');
+    this.transcriptionQueue.clean(24 * 3600 * 1000, 'active');
   }
 }
