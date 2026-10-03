@@ -236,4 +236,38 @@ export class JobsService {
     this.transcriptionQueue.clean(24 * 3600 * 1000, 'wait');
     this.transcriptionQueue.clean(24 * 3600 * 1000, 'active');
   }
+
+  static async addTranscriptionJob(url: string, videoInfo: any, user: any) {
+    let video = await this.videoRepository.findOne({
+      where: {
+        url,
+      },
+    });
+
+    if (!video) {
+      video = new Video();
+      video.url = url;
+      video.user = user;
+      video.status = VideoStatus.PENDING;
+      if (videoInfo) {
+        Object.assign(video, {
+          title: videoInfo.title,
+          description: videoInfo.description,
+          duration: videoInfo.duration,
+          author: videoInfo.author,
+          thumbnail: videoInfo.thumbnailUrl || videoInfo.thumbnail,
+        });
+      }
+      await this.videoRepository.save(video);
+    }
+
+    const job = await this.transcriptionQueue.add({
+      url,
+      userId: user.id,
+      videoInfo,
+    });
+    return {
+      jobId: job.id,
+    };
+  }
 }
