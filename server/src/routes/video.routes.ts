@@ -20,4 +20,11 @@ videoRoutes.post(
   VideoController.downloadAudio
 );
 
+videoRoutes.post(
+  '/transcribe-audio',
+  authenticateUser,
+  validateRequest({ body: youtubeUrlSchema }),
+  VideoController.transcribeAudio
+);
+
 export default videoRoutes;
