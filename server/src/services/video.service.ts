@@ -6,7 +6,6 @@ import youtubeDl from 'youtube-dl-exec';
 import ffmpeg from '@ffmpeg-installer/ffmpeg';
 
 import { logger } from '@/lib/logger';
-
 import { YoutubeVideoInfoT, YoutubeDlOutputT } from '@/types/video';
 
 import {

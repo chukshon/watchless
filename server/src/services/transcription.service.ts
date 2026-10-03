@@ -2,12 +2,9 @@ import path from 'path';
 import { unlink } from 'fs/promises';
 
 import ffmpeg from 'fluent-ffmpeg';
-
 import { protos } from '@google-cloud/speech';
 
 import { env } from '@/config/env';
-
-import { logger } from '@/lib/logger';
 import {
   gcsBucketName,
   gcsLocation,
@@ -15,6 +12,7 @@ import {
   storage,
   speechClient,
 } from '@/lib/google-cloud';
+import { logger } from '@/lib/logger';
 
 import {
   BadRequestException,

@@ -2,7 +2,6 @@ import Queue from 'bull';
 import { unlink } from 'fs/promises';
 
 import { env } from '@/config/env';
-
 import { logger } from '@/lib/logger';
 import { VideoStatus } from '@/constants/video';
 
@@ -13,7 +12,6 @@ import { Analysis } from '@/database/entities/analysis.entity';
 import { User } from '@/database/entities/user.entity';
 
 import { TranscriptionService } from './transcription.service';
-
 import { VideoService } from './video.service';
 
 export class JobsService {
