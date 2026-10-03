@@ -8,7 +8,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@/errors/http-errors';
-
 import type { AuthUserResponse } from '@/types/user';
 import type { LoginInputT, RegisterInputT } from '@/validators/auth.validator';
 

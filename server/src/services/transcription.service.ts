@@ -6,6 +6,11 @@ import { protos } from '@google-cloud/speech';
 
 import { env } from '@/config/env';
 import {
+  BadRequestException,
+  InternalServerErrorException,
+} from '@/errors/http-errors';
+
+import {
   gcsBucketName,
   gcsLocation,
   gcsStorageClass,
@@ -13,12 +18,6 @@ import {
   speechClient,
 } from '@/lib/google-cloud';
 import { logger } from '@/lib/logger';
-
-import {
-  BadRequestException,
-  InternalServerErrorException,
-} from '@/errors/http-errors';
-
 import type { TranscriptionResultT } from '@/types/transcription';
 
 export class TranscriptionService {

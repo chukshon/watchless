@@ -14,7 +14,6 @@ import { User } from '@/database/entities/user.entity';
 import { TranscriptionService } from '@/services/transcription.service';
 import { VideoService } from '@/services/video.service';
 import { AiService } from '@/services/ai.service';
-import { NotFoundException } from '@/errors/http-errors';
 
 export class JobsService {
   private static transcriptionQueue: Queue.Queue;

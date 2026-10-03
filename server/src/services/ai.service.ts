@@ -1,11 +1,12 @@
-import { googleAIModel } from '@/lib/google-ai';
 import { GenerateContentRequest } from '@google/generative-ai';
-import { AiAnalysisResultT } from '@/types/ai';
+
+import { googleAIModel } from '@/lib/google-ai';
 import { logger } from '@/lib/logger';
 import {
   BadRequestException,
   InternalServerErrorException,
 } from '@/errors/http-errors';
+import { AiAnalysisResultT } from '@/types/ai';
 
 export class AiService {
   private static readonly genAiModel = googleAIModel;

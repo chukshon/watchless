@@ -42,7 +42,6 @@ export class VideoController {
     const user = await AuthService.getUserById(userId!);
     const videoInfo = await VideoService.getYoutubeVideoInfo(youtubeUrl);
 
-    // create a background job to transcribe the audio
     const job = await JobsService.addTranscriptionJob(
       youtubeUrl,
       videoInfo,
