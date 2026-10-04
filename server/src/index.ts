@@ -1,15 +1,11 @@
 import 'reflect-metadata';
-import express from 'express';
 import app from '@/app';
-import cors from 'cors';
 import { env } from '@/config/env';
-import { AppDataSource } from '@/database/data-source';
 import { logger } from '@/lib/logger';
+import { createBullAdminApp } from '@/lib/bull-board';
+
+import { AppDataSource } from '@/database/data-source';
 import { JobsService } from '@/services/jobs.service';
-import { createBullBoard } from '@bull-board/api';
-import { BullAdapter } from '@bull-board/api/bullAdapter';
-import { ExpressAdapter } from '@bull-board/express';
-import { createBullAdminApp } from './lib/bull-board';
 
 async function bootstrap() {
   try {
