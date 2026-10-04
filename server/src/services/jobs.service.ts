@@ -227,7 +227,7 @@ export class JobsService {
     });
 
     this.transcriptionQueue.on('error', (error) => {
-      logger.error('Error processing transcription job', { error });
+      logger.error('transcription queue error', { error });
     });
 
     // Clean up stuck jobs
