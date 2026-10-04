@@ -132,7 +132,7 @@ export class JobsService {
           video.status = VideoStatus.COMPLETED;
           await this.videoRepository.save(video);
           return {
-            status: 'completed',
+            status: VideoStatus.COMPLETED,
             videoInfo,
             transcription: transcriptionResult,
           };

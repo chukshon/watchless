@@ -1,7 +1,8 @@
+import { AnalysisSentiment } from '@/constants/analysis';
 export type AiAnalysisResultT = {
   summary: string;
   keyPoints: string[];
-  sentiment: 'positive' | 'negative' | 'neutral';
+  sentiment: AnalysisSentiment;
   topics: string[];
   suggestedTags: string[];
 };

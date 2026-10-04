@@ -7,6 +7,7 @@ import {
   InternalServerErrorException,
 } from '@/errors/http-errors';
 import { AiAnalysisResultT } from '@/types/ai';
+import { AnalysisSentiment } from '@/constants/analysis';
 
 export class AiService {
   private static readonly genAiModel = googleAIModel;
@@ -84,9 +85,13 @@ Duration: ${videoInfo.duration} seconds`;
 
       //   ensure sentiment is one of the following: positive, negative, neutral
       if (
-        !['positive', 'negative', 'neutral'].includes(analysisResult.sentiment)
+        ![
+          AnalysisSentiment.POSITIVE,
+          AnalysisSentiment.NEGATIVE,
+          AnalysisSentiment.NEUTRAL,
+        ].includes(analysisResult.sentiment)
       ) {
-        analysisResult.sentiment = 'neutral';
+        analysisResult.sentiment = AnalysisSentiment.NEUTRAL;
         logger.error('Invalid sentiment', { analysisResult });
         throw new BadRequestException('Invalid sentiment');
       }
