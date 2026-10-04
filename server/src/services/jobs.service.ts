@@ -24,6 +24,9 @@ export class JobsService {
     AppDataSource.getRepository(Analysis);
   private static readonly userRepository = AppDataSource.getRepository(User);
 
+  static getTranscriptionQueue() {
+    return this.transcriptionQueue;
+  }
   static async initialize() {
     this.transcriptionQueue = new Queue('transcription', {
       redis: {
