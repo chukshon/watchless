@@ -21,5 +21,21 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    container_name: watchless-redis
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - watchless_redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
 volumes:
   watchless_pg_data:
+  watchless_redis_data:
