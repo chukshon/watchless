@@ -37,6 +37,8 @@
     "typescript-eslint": "^8.70.1"
   },
   "dependencies": {
+    "@bull-board/api": "^9.10.2",
+    "@bull-board/express": "^9.10.2",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@google-cloud/speech": "^8.1.1",
     "@google-cloud/storage": "^8.2.0",
