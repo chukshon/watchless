@@ -10,6 +10,13 @@ export enum SubscriptionStatus {
   TRIAL = 'trial',
 }
 
+export enum SubscriptionWebhookEvent {
+  CHECKOUT_SESSION_COMPLETED = 'checkout.session.completed',
+  INVOICE_PAID = 'invoice.paid',
+  SUBSCRIPTION_UPDATED = 'customer.subscription.updated',
+  SUBSCRIPTION_DELETED = 'customer.subscription.deleted',
+}
+
 export enum SubscriptionTier {
   BASIC = 'basic',
   PREMIUM = 'premium',

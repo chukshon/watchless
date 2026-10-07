@@ -4,7 +4,10 @@ import { logger } from '@/lib/logger';
 import { initializeStripe } from '@/lib/stripe';
 
 import { BadRequestException, NotFoundException } from '@/errors/http-errors';
-import { SubscriptionStatus } from '@/constants/subscription';
+import {
+  SubscriptionStatus,
+  SubscriptionWebhookEvent,
+} from '@/constants/subscription';
 import { AppDataSource } from '@/database/data-source';
 import { SubscriptionPlan } from '@/database/entities/subscription-plan.entity';
 import { UserSubscription } from '@/database/entities/user-subscription.entity';
@@ -18,7 +21,7 @@ export class SubscriptionService {
   private static readonly userSubscriptionRepository =
     AppDataSource.getRepository(UserSubscription);
 
-  public static async getSubscriptionPlans() {
+  static async getSubscriptionPlans() {
     return await this.subscriptionPlanRepository.find({
       where: {
         isActive: true,
@@ -29,7 +32,7 @@ export class SubscriptionService {
     });
   }
 
-  public static async getSubscriptionPlanById(SubscriptionPlanId: string) {
+  static async getSubscriptionPlanById(SubscriptionPlanId: string) {
     if (!SubscriptionPlanId) {
       logger.error('Subscription plan ID is required');
       throw new BadRequestException('Subscription plan ID is required');
@@ -49,7 +52,7 @@ export class SubscriptionService {
     return subscriptionPlan;
   }
 
-  public static async getUserSubscriptionById(UserId: string) {
+  static async getUserSubscriptionById(UserId: string) {
     if (!UserId) {
       logger.error('User ID is required');
       throw new BadRequestException('User ID is required');
@@ -76,7 +79,7 @@ export class SubscriptionService {
     return userSubscription;
   }
 
-  public static async createCheckoutSession(
+  static async createCheckoutSession(
     UserId: string,
     SubscriptionPlanId: string
   ) {
@@ -143,22 +146,22 @@ export class SubscriptionService {
     };
   }
 
-  public static async handleWebHook(stripeEvent: Stripe.Event) {
-    switch (stripeEvent.type) {
-      case 'checkout.session.completed':
+  static async handleWebHook(stripeEvent: Stripe.Event) {
+    switch (stripeEvent.type as SubscriptionWebhookEvent) {
+      case SubscriptionWebhookEvent.CHECKOUT_SESSION_COMPLETED:
         await this.handleCheckoutSessionCompleted(
           stripeEvent.data.object as Stripe.Checkout.Session
         );
         break;
-      case 'invoice.paid':
+      case SubscriptionWebhookEvent.INVOICE_PAID:
         await this.handleInvoicePaid(stripeEvent.data.object as Stripe.Invoice);
         break;
-      case 'customer.subscription.updated':
+      case SubscriptionWebhookEvent.SUBSCRIPTION_UPDATED:
         await this.handleSubscriptionUpdated(
           stripeEvent.data.object as Stripe.Subscription
         );
         break;
-      case 'customer.subscription.deleted':
+      case SubscriptionWebhookEvent.SUBSCRIPTION_DELETED:
         await this.handleSubscriptionDeleted(
           stripeEvent.data.object as Stripe.Subscription
         );
@@ -166,6 +169,95 @@ export class SubscriptionService {
     }
 
     return { received: true };
+  }
+
+  static async cancelSubscription(userId: string) {
+    const subscription = await this.getUserSubscriptionById(userId);
+
+    if (!subscription) {
+      logger.error('No active subscription found');
+      throw new NotFoundException('No active subscription found');
+    }
+
+    await this.stripe.subscriptions.update(subscription.stripeSubscriptionId!, {
+      cancel_at_period_end: true,
+    });
+
+    return {
+      message: 'Subscription will be canceled at the end of the billing period',
+    };
+  }
+
+  static async checkSubscriptionLimits(
+    userId: string,
+    videoDurationInSeconds: number
+  ) {
+    const userSubscription = await this.getUserSubscriptionById(userId);
+
+    // Free tier (no subscription)
+    const FREE_TIER_VIDEO_LIMIT = 3;
+    const FREE_TIER_MINUTES_LIMIT = 30;
+
+    if (!userSubscription) {
+      // Check user's usage in the free tier
+      const totalVideos = await this.countUserVideos(userId);
+      const totalMinutes = await this.countUserMinutes(userId);
+
+      const minutesNeeded = Math.ceil(videoDurationInSeconds / 60);
+
+      if (totalVideos >= FREE_TIER_VIDEO_LIMIT) {
+        throw new BadRequestException(
+          `Free tier limit reached: ${FREE_TIER_VIDEO_LIMIT} videos. Please upgrade your subscription.`
+        );
+      }
+
+      if (totalMinutes + minutesNeeded > FREE_TIER_MINUTES_LIMIT) {
+        throw new BadRequestException(
+          `Free tier limit reached: ${FREE_TIER_MINUTES_LIMIT} minutes. Please upgrade your subscription.`
+        );
+      }
+
+      return true;
+    }
+
+    // Paid subscription
+    const plan = userSubscription.subscriptionPlan;
+    const minutesNeeded = Math.ceil(videoDurationInSeconds / 60);
+
+    // If unlimited
+    if (plan.videoLimit === -1 || plan.minutesLimit === -1) {
+      return true;
+    }
+
+    // Check video limit
+    if (plan.videoLimit > 0 && userSubscription.videoUsed >= plan.videoLimit) {
+      throw new BadRequestException(
+        `Your subscription limit of ${plan.videoLimit} videos has been reached. Please upgrade your plan.`
+      );
+    }
+
+    // Check minutes limit
+    if (
+      plan.minutesLimit > 0 &&
+      userSubscription.minutesUsed + minutesNeeded > plan.minutesLimit
+    ) {
+      throw new BadRequestException(
+        `Your subscription limit of ${plan.minutesLimit} minutes will be exceeded. Please upgrade your plan.`
+      );
+    }
+
+    return true;
+  }
+
+  static async incrementUsage(userId: string, videoDurationInSeconds: number) {
+    const userSubscription = await this.getUserSubscriptionById(userId);
+    const minutesUsed = Math.ceil(videoDurationInSeconds / 60);
+
+    if (userSubscription) {
+      userSubscription.videoUsed += 1;
+      userSubscription.minutesUsed += minutesUsed;
+      await this.userSubscriptionRepository.save(userSubscription);
+    }
   }
 
   private static async handleCheckoutSessionCompleted(
@@ -275,37 +367,6 @@ export class SubscriptionService {
     }
   }
 
-  public static async cancelSubscription(userId: string) {
-    const subscription = await this.getUserSubscriptionById(userId);
-
-    if (!subscription) {
-      logger.error('No active subscription found');
-      throw new NotFoundException('No active subscription found');
-    }
-
-    await this.stripe.subscriptions.update(subscription.stripeSubscriptionId!, {
-      cancel_at_period_end: true,
-    });
-
-    return {
-      message: 'Subscription will be canceled at the end of the billing period',
-    };
-  }
-
-  public static async incrementUsage(
-    userId: string,
-    videoDurationInSeconds: number
-  ) {
-    const userSubscription = await this.getUserSubscriptionById(userId);
-    const minutesUsed = Math.ceil(videoDurationInSeconds / 60);
-
-    if (userSubscription) {
-      userSubscription.videoUsed += 1;
-      userSubscription.minutesUsed += minutesUsed;
-      await this.userSubscriptionRepository.save(userSubscription);
-    }
-  }
-
   private static async countUserVideos(userId: string): Promise<number> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -330,67 +391,6 @@ export class SubscriptionService {
     }, 0);
 
     return Math.ceil(totalSeconds / 60);
-  }
-
-  public static async checkSubscriptionLimits(
-    userId: string,
-    videoDurationInSeconds: number
-  ) {
-    const userSubscription = await this.getUserSubscriptionById(userId);
-
-    // Free tier (no subscription)
-    const FREE_TIER_VIDEO_LIMIT = 3;
-    const FREE_TIER_MINUTES_LIMIT = 30;
-
-    if (!userSubscription) {
-      // Check user's usage in the free tier
-      const totalVideos = await this.countUserVideos(userId);
-      const totalMinutes = await this.countUserMinutes(userId);
-
-      const minutesNeeded = Math.ceil(videoDurationInSeconds / 60);
-
-      if (totalVideos >= FREE_TIER_VIDEO_LIMIT) {
-        throw new BadRequestException(
-          `Free tier limit reached: ${FREE_TIER_VIDEO_LIMIT} videos. Please upgrade your subscription.`
-        );
-      }
-
-      if (totalMinutes + minutesNeeded > FREE_TIER_MINUTES_LIMIT) {
-        throw new BadRequestException(
-          `Free tier limit reached: ${FREE_TIER_MINUTES_LIMIT} minutes. Please upgrade your subscription.`
-        );
-      }
-
-      return true;
-    }
-
-    // Paid subscription
-    const plan = userSubscription.subscriptionPlan;
-    const minutesNeeded = Math.ceil(videoDurationInSeconds / 60);
-
-    // If unlimited
-    if (plan.videoLimit === -1 || plan.minutesLimit === -1) {
-      return true;
-    }
-
-    // Check video limit
-    if (plan.videoLimit > 0 && userSubscription.videoUsed >= plan.videoLimit) {
-      throw new BadRequestException(
-        `Your subscription limit of ${plan.videoLimit} videos has been reached. Please upgrade your plan.`
-      );
-    }
-
-    // Check minutes limit
-    if (
-      plan.minutesLimit > 0 &&
-      userSubscription.minutesUsed + minutesNeeded > plan.minutesLimit
-    ) {
-      throw new BadRequestException(
-        `Your subscription limit of ${plan.minutesLimit} minutes will be exceeded. Please upgrade your plan.`
-      );
-    }
-
-    return true;
   }
 
   private static async createUserSubscription(
