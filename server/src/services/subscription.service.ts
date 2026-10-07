@@ -143,7 +143,30 @@ export class SubscriptionService {
     };
   }
 
-  public static async handleWebHook(stripeEvent: Stripe.Event) {}
+  public static async handleWebHook(stripeEvent: Stripe.Event) {
+    switch (stripeEvent.type) {
+      case 'checkout.session.completed':
+        await this.handleCheckoutSessionCompleted(
+          stripeEvent.data.object as Stripe.Checkout.Session
+        );
+        break;
+      case 'invoice.paid':
+        await this.handleInvoicePaid(stripeEvent.data.object as Stripe.Invoice);
+        break;
+      case 'customer.subscription.updated':
+        await this.handleSubscriptionUpdated(
+          stripeEvent.data.object as Stripe.Subscription
+        );
+        break;
+      case 'customer.subscription.deleted':
+        await this.handleSubscriptionDeleted(
+          stripeEvent.data.object as Stripe.Subscription
+        );
+        break;
+    }
+
+    return { received: true };
+  }
 
   private static async handleCheckoutSessionCompleted(
     stripeSession: Stripe.Checkout.Session
