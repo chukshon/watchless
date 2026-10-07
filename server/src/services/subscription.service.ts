@@ -269,6 +269,46 @@ export class SubscriptionService {
     };
   }
 
+  public static async incrementUsage(
+    userId: string,
+    videoDurationInSeconds: number
+  ) {
+    const userSubscription = await this.getUserSubscriptionById(userId);
+    const minutesUsed = Math.ceil(videoDurationInSeconds / 60);
+
+    if (userSubscription) {
+      userSubscription.videoUsed += 1;
+      userSubscription.minutesUsed += minutesUsed;
+      await this.userSubscriptionRepository.save(userSubscription);
+    }
+  }
+
+  private static async countUserVideos(userId: string): Promise<number> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['videos'],
+    });
+
+    return user?.videos?.length || 0;
+  }
+
+  private static async countUserMinutes(userId: string): Promise<number> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['videos'],
+    });
+
+    if (!user?.videos?.length) {
+      return 0;
+    }
+
+    const totalSeconds = user.videos.reduce((total, video) => {
+      return total + (video.duration || 0);
+    }, 0);
+
+    return Math.ceil(totalSeconds / 60);
+  }
+
   private static async createUserSubscription(
     userId: string,
     subscriptionPlanId: string,
