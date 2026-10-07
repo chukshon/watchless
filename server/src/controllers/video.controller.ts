@@ -38,7 +38,7 @@ export class VideoController {
       );
   });
 
-  static transcribeAudio = asyncHandler(async (req, res) => {
+  static transcribeVideo = asyncHandler(async (req, res) => {
     const { youtubeUrl } = req.body as YoutubeUrlInputT;
     const userId = req.user?.userId;
 
@@ -89,5 +89,29 @@ export class VideoController {
     res
       .status(HTTPSTATUS.OK)
       .json(getSuccessResponse(transformedVideo, 'Video fetched successfully'));
+  });
+
+  static getUserVideos = asyncHandler(async (req, res) => {
+    const userId = req.user?.userId;
+    const videos = await VideoService.getUserVideos(userId!);
+
+    const transformedVideos = videos.map((video) =>
+      VideoService.transformVideo(video)
+    );
+
+    res
+      .status(HTTPSTATUS.OK)
+      .json(
+        getSuccessResponse(transformedVideos, 'Videos fetched successfully')
+      );
+  });
+
+  static getAllJobs = asyncHandler(async (req, res) => {
+    const userId = req.user?.userId;
+    const jobs = await JobsService.getAllJobs(userId!);
+
+    res
+      .status(HTTPSTATUS.OK)
+      .json(getSuccessResponse(jobs, 'Jobs fetched successfully'));
   });
 }

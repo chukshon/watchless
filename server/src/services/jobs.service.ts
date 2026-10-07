@@ -14,7 +14,7 @@ import { User } from '@/database/entities/user.entity';
 import { TranscriptionService } from '@/services/transcription.service';
 import { VideoService } from '@/services/video.service';
 import { AiService } from '@/services/ai.service';
-import { NotFoundException } from '@/errors/http-errors';
+import { NotFoundException, UnauthorizedException } from '@/errors/http-errors';
 
 export class JobsService {
   private static transcriptionQueue: Queue.Queue;
@@ -320,8 +320,13 @@ export class JobsService {
   }
 
   static async getAllJobs(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
     // Get Jobs in different states
-
     const activeJobs = await this.transcriptionQueue.getActive();
     const delayedJobs = await this.transcriptionQueue.getDelayed();
     const waitingJobs = await this.transcriptionQueue.getWaiting();
