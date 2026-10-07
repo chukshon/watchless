@@ -1,7 +1,4 @@
 import { HTTPSTATUS } from '@/constants/http-status-code';
-import { asyncHandler } from '@/middleware/async-handler.middleware';
-import type { ValidatedRequest } from '@/middleware/validate-request.middleware';
-import { AuthService } from '@/services/auth.service';
 import { getSuccessResponse } from '@/types/api-response';
 import type {
   LoginInputT,
@@ -9,6 +6,10 @@ import type {
   ResendEmailVerificationInputT,
   VerifyEmailQueryT,
 } from '@/validators/auth.validator';
+
+import { asyncHandler } from '@/middleware/async-handler.middleware';
+import type { ValidatedRequest } from '@/middleware/validate-request.middleware';
+import { AuthService } from '@/services/auth.service';
 
 export class AuthController {
   static register = asyncHandler(async (req, res) => {

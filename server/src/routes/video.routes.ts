@@ -1,11 +1,13 @@
 import { Router } from 'express';
-import { VideoController } from '@/controllers/video.controller';
+
+import { SubscriptionTier } from '@/constants/subscription';
+import { jobIdParamSchema, videoIdParamSchema } from '@/validators/video';
+import { youtubeUrlSchema } from '@/validators/shared.validator';
+
 import { authenticateUser } from '@/middleware/authenticate-user.middleware';
 import { validateRequest } from '@/middleware/validate-request.middleware';
-import { youtubeUrlSchema } from '@/validators/shared.validator';
-import { jobIdParamSchema, videoIdParamSchema } from '@/validators/video';
 import { requiresSubscription } from '@/middleware/subscription.middleware';
-import { SubscriptionTier } from '@/constants/subscription';
+import { VideoController } from '@/controllers/video.controller';
 
 const videoRoutes = Router();
 

@@ -1,5 +1,5 @@
 import { BaseTemplateParamsT } from '@/types/email';
-import { generateBaseTemplate } from './base-template';
+import { generateBaseTemplate } from '@/mailers/templates/base-template';
 
 export const generateEmailVerificationTemplate = (verificationUrl: string) => {
   const bodySection = `

@@ -9,11 +9,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
 import bcrypt from 'bcrypt';
 
 import { Video } from '@/database/entities/video.entity';
-import { UserSubscription } from './user-subscription.entity';
+import { UserSubscription } from '@/database/entities/user-subscription.entity';
 
 const SALT_ROUNDS = 12;
 

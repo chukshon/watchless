@@ -5,9 +5,9 @@ import { logger } from '@/lib/logger';
 import { createBullAdminApp } from '@/lib/bull-board';
 
 import { AppDataSource } from '@/database/data-source';
-import { JobsService } from '@/services/jobs.service';
-
 import { seedSubscriptionPlans } from '@/database/seed/subscription-plans.seed';
+
+import { JobsService } from '@/services/jobs.service';
 
 async function bootstrap() {
   try {

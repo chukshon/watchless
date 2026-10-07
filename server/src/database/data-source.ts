@@ -1,14 +1,15 @@
 import 'reflect-metadata';
-
 import { join } from 'path';
 import { DataSource } from 'typeorm';
+
 import { env } from '@/config/env';
+
 import { Analysis } from '@/database/entities/analysis.entity';
 import { Transcription } from '@/database/entities/transcription.entity';
 import { User } from '@/database/entities/user.entity';
 import { Video } from '@/database/entities/video.entity';
-import { UserSubscription } from './entities/user-subscription.entity';
-import { SubscriptionPlan } from './entities/subscription-plan.entity';
+import { UserSubscription } from '@/database/entities/user-subscription.entity';
+import { SubscriptionPlan } from '@/database/entities/subscription-plan.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',

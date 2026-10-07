@@ -1,7 +1,8 @@
+import { logger } from '@/lib/logger';
+import { getSubscriptionPlans } from '@/constants/subscription';
+
 import { AppDataSource } from '@/database/data-source';
 import { SubscriptionPlan } from '@/database/entities/subscription-plan.entity';
-import { getSubscriptionPlans } from '@/constants/subscription';
-import { logger } from '@/lib/logger';
 
 export async function seedSubscriptionPlans() {
   if (!AppDataSource.isInitialized) {

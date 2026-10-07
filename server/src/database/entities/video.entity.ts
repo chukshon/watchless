@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { VideoStatus } from '@/constants/video';
+
 import { Analysis } from '@/database/entities/analysis.entity';
 import { Transcription } from '@/database/entities/transcription.entity';
 import { User } from '@/database/entities/user.entity';

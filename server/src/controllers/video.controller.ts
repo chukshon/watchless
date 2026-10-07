@@ -1,12 +1,13 @@
 import { HTTPSTATUS } from '@/constants/http-status-code';
 import { asyncHandler } from '@/middleware/async-handler.middleware';
+import { getSuccessResponse } from '@/types/api-response';
+import type { YoutubeUrlInputT } from '@/validators/shared.validator';
+import { VideoIdParamInputT } from '@/validators/video';
+
 import { AuthService } from '@/services/auth.service';
 import { JobsService } from '@/services/jobs.service';
 import { SubscriptionService } from '@/services/subscription.service';
 import { VideoService } from '@/services/video.service';
-import { getSuccessResponse } from '@/types/api-response';
-import type { YoutubeUrlInputT } from '@/validators/shared.validator';
-import { VideoIdParamInputT } from '@/validators/video';
 
 export class VideoController {
   static getYoutubeVideoInfo = asyncHandler(async (req, res) => {

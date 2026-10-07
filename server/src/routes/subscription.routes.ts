@@ -1,8 +1,10 @@
 import { Router } from 'express';
+
+import { createCheckoutSessionBodySchema } from '@/validators/subscription.validator';
 import { authenticateUser } from '@/middleware/authenticate-user.middleware';
 import { validateRequest } from '@/middleware/validate-request.middleware';
+
 import { SubscriptionController } from '@/controllers/subscription.controller';
-import { createCheckoutSessionBodySchema } from '@/validators/subscription.validator';
 
 const subscriptionRoutes = Router();
 

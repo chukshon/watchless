@@ -1,12 +1,15 @@
 import cors from 'cors';
 import express from 'express';
 import morgan from 'morgan';
+
 import { env } from '@/config/env';
-import { getSuccessResponse } from '@/types/api-response';
 import { morganStream } from '@/lib/logger';
+import routes from '@/routes';
+
+import { getSuccessResponse } from '@/types/api-response';
 import { errorHandlerMiddleware } from '@/middleware/error.middleware';
 import { notFoundMiddleware } from '@/middleware/not-found.middleware';
-import routes from '@/routes';
+
 import { SubscriptionController } from './controllers/subscription.controller';
 
 const app = express();

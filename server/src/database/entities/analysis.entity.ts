@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { AnalysisSentiment } from '@/constants/analysis';
 import { Video } from '@/database/entities/video.entity';
 

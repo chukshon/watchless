@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, type RequestHandler } from 'express';
-import { UnauthorizedException } from '@/errors/http-errors';
+
 import { TokenPayload, verifyToken } from '@/lib/jwt';
+import { UnauthorizedException } from '@/errors/http-errors';
 
 import { logger } from '@/lib/logger';
 

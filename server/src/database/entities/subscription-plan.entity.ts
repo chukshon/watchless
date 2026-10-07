@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserSubscription } from './user-subscription.entity';
+import { UserSubscription } from '@/database/entities/user-subscription.entity';
 
 @Entity({ name: 'subscription_plans' })
 export class SubscriptionPlan {
