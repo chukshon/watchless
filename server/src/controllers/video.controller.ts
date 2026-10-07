@@ -58,4 +58,19 @@ export class VideoController {
       )
     );
   });
+
+  static getTranscriptionStatus = asyncHandler(async (req, res) => {
+    const { jobId } = req.params as { jobId: string };
+
+    const jobStatus = await JobsService.getJobStatus(jobId);
+
+    res
+      .status(HTTPSTATUS.OK)
+      .json(
+        getSuccessResponse(
+          jobStatus,
+          'Transcription status fetched successfully'
+        )
+      );
+  });
 }
