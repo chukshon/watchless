@@ -318,4 +318,22 @@ export class JobsService {
       final: result?.final || state === VideoStatus.COMPLETED || attempts >= 3,
     };
   }
+
+  private static async getVideoStatus(youtubeVideoUrl: string) {
+    const video = await this.videoRepository.findOne({
+      where: { url: youtubeVideoUrl },
+      relations: ['transcription', 'analysis'],
+    });
+
+    if (!video) {
+      return null;
+    }
+
+    return {
+      id: video.id,
+      status: video.status,
+      hasTranscription: !!video.transcription,
+      hasAnalysis: !!video.analysis,
+    };
+  }
 }
