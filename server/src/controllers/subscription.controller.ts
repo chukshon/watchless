@@ -57,4 +57,23 @@ export class SubscriptionController {
       throw error;
     }
   });
+  static createCheckoutSession = asyncHandler(async (req, res) => {
+    const userId = req.user?.userId;
+    const { planId } = req.body as { planId?: string };
+
+    if (!planId) {
+      throw new BadRequestException('Plan ID is required');
+    }
+
+    const session = await SubscriptionService.createCheckoutSession(
+      userId!,
+      planId
+    );
+
+    res
+      .status(HTTPSTATUS.OK)
+      .json(
+        getSuccessResponse(session, 'Checkout session created successfully')
+      );
+  });
 }
