@@ -14,6 +14,7 @@ import { User } from '@/database/entities/user.entity';
 import { TranscriptionService } from '@/services/transcription.service';
 import { VideoService } from '@/services/video.service';
 import { AiService } from '@/services/ai.service';
+import { NotFoundException } from '@/errors/http-errors';
 
 export class JobsService {
   private static transcriptionQueue: Queue.Queue;
@@ -270,6 +271,51 @@ export class JobsService {
     });
     return {
       jobId: job.id,
+    };
+  }
+
+  static async getJobStatus(jobId: string) {
+    const job = await this.transcriptionQueue.getJob(jobId);
+    if (!job) {
+      throw new NotFoundException('No Job found');
+    }
+
+    const state = await job.getState();
+    const progress = job.progress();
+    const result = job.returnvalue;
+    const failedReason = job.failedReason;
+    const attempts = job.attemptsMade;
+
+    // Get Video from database if available
+
+    let videoStatus = null;
+
+    if (result?.videoInfo?.url) {
+      const video = await this.videoRepository.findOne({
+        where: {
+          url: result.videoInfo.url,
+        },
+        relations: ['transcription', 'analysis'],
+      });
+      if (video) {
+        videoStatus = {
+          id: video.id,
+          status: video.status,
+          hasTranscription: !!video.transcription,
+          hasAnalysis: !!video.analysis,
+        };
+      }
+    }
+
+    return {
+      id: job.id,
+      state,
+      progress,
+      result,
+      failedReason,
+      attempts,
+      videoStatus,
+      final: result?.final || state === VideoStatus.COMPLETED || attempts >= 3,
     };
   }
 }
