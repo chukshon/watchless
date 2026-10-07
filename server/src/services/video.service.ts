@@ -21,6 +21,40 @@ export class VideoService {
   private static readonly AUDIO_DIR = path.join(process.cwd(), 'temp', 'audio');
   private static readonly videoRepository = AppDataSource.getRepository(Video);
 
+  static async getUserVideos(userId: string): Promise<Video[]> {
+    const videos = await this.videoRepository.find({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      relations: ['transcription', 'analysis'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+    return videos;
+  }
+
+  static async getVideoById(
+    videoId: string,
+    userId: string
+  ): Promise<Video | null> {
+    const video = await this.videoRepository.findOne({
+      where: {
+        id: videoId,
+        user: {
+          id: userId,
+        },
+      },
+      relations: ['transcription', 'analysis'],
+    });
+
+    if (!video) {
+      throw new NotFoundException('Video not found');
+    }
+    return video;
+  }
   static async ensureDirectoryExists() {
     await mkdir(VideoService.AUDIO_DIR, { recursive: true });
   }
@@ -111,5 +145,38 @@ export class VideoService {
       }
       throw new InternalServerErrorException('Failed to download audio');
     }
+  }
+
+  static transformVideo(video: Video) {
+    return {
+      id: video?.id,
+      url: video?.url,
+      title: video?.title,
+      description: video?.description,
+      duration: video?.duration,
+      author: video?.author,
+      thumbnail: video?.thumbnail,
+      status: video?.status,
+      createdAt: video?.createdAt,
+      updatedAt: video?.updatedAt,
+      transcription: video?.transcription
+        ? {
+            text: video?.transcription?.text,
+            confidence: video?.transcription?.confidence,
+            isMusic: video?.transcription?.isMusic,
+            createdAt: video?.transcription?.createdAt,
+          }
+        : null,
+      analysis: video?.analysis
+        ? {
+            summary: video?.analysis?.summary,
+            keyPoints: video?.analysis?.keyPoints,
+            sentiments: video?.analysis?.sentiment,
+            topics: video?.analysis?.topics,
+            suggestedTags: video?.analysis?.suggestedTags,
+            updatedAt: video?.analysis?.updatedAt,
+          }
+        : null,
+    };
   }
 }

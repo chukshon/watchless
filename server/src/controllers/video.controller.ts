@@ -4,7 +4,10 @@ import { AuthService } from '@/services/auth.service';
 import { JobsService } from '@/services/jobs.service';
 import { VideoService } from '@/services/video.service';
 import { getSuccessResponse } from '@/types/api-response';
-import type { YoutubeUrlInputT } from '@/validators/shared.validator';
+import type {
+  YoutubeUrlInputT,
+  IdParamInputT,
+} from '@/validators/shared.validator';
 
 export class VideoController {
   static getYoutubeVideoInfo = asyncHandler(async (req, res) => {
@@ -72,5 +75,19 @@ export class VideoController {
           'Transcription status fetched successfully'
         )
       );
+  });
+
+  static getVideoById = asyncHandler(async (req, res) => {
+    const { id } = req.params as IdParamInputT;
+    const userId = req.user?.userId;
+
+    const video = await VideoService.getVideoById(id, userId!);
+
+    // transform the response to include only necessary fields
+    const transformedVideo = VideoService.transformVideo(video!);
+
+    res
+      .status(HTTPSTATUS.OK)
+      .json(getSuccessResponse(transformedVideo, 'Video fetched successfully'));
   });
 }
