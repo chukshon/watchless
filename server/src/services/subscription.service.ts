@@ -309,6 +309,79 @@ export class SubscriptionService {
     return Math.ceil(totalSeconds / 60);
   }
 
+  public static async checkSubscriptionLimits(
+    userId: string,
+    videoDurationInSeconds: number
+  ) {
+    const userSubscription = await this.getUserSubscriptionById(userId);
+
+    // Free tier (no subscription)
+    const FREE_TIER_VIDEO_LIMIT = 3;
+    const FREE_TIER_MINUTES_LIMIT = 30;
+
+    if (!userSubscription) {
+      // Check user's usage in the free tier
+      const totalVideos = await this.countUserVideos(userId);
+      const totalMinutes = await this.countUserMinutes(userId);
+
+      const minutesNeeded = Math.ceil(videoDurationInSeconds / 60);
+
+      if (totalVideos >= FREE_TIER_VIDEO_LIMIT) {
+        logger.error(
+          `Free tier limit reached: ${FREE_TIER_VIDEO_LIMIT} videos. Please upgrade your subscription.`
+        );
+        throw new BadRequestException(
+          `Free tier limit reached: ${FREE_TIER_VIDEO_LIMIT} videos. Please upgrade your subscription.`
+        );
+      }
+
+      if (totalMinutes + minutesNeeded > FREE_TIER_MINUTES_LIMIT) {
+        logger.error(
+          `Free tier limit reached: ${FREE_TIER_MINUTES_LIMIT} minutes. Please upgrade your subscription.`
+        );
+        throw new BadRequestException(
+          `Free tier limit reached: ${FREE_TIER_MINUTES_LIMIT} minutes. Please upgrade your subscription.`
+        );
+      }
+
+      return true;
+    }
+
+    // Paid subscription
+    const plan = userSubscription.subscriptionPlan;
+    const minutesNeeded = Math.ceil(videoDurationInSeconds / 60);
+
+    // If unlimited
+    if (plan.videoLimit === -1 || plan.minutesLimit === -1) {
+      return true;
+    }
+
+    // Check video limit
+    if (plan.videoLimit > 0 && userSubscription.videoUsed >= plan.videoLimit) {
+      logger.error(
+        `Your subscription limit of ${plan.videoLimit} videos has been reached. Please upgrade your plan.`
+      );
+      throw new BadRequestException(
+        `Your subscription limit of ${plan.videoLimit} videos has been reached. Please upgrade your plan.`
+      );
+    }
+
+    // Check minutes limit
+    if (
+      plan.minutesLimit > 0 &&
+      userSubscription.minutesUsed + minutesNeeded > plan.minutesLimit
+    ) {
+      logger.error(
+        `Your subscription limit of ${plan.minutesLimit} minutes will be exceeded. Please upgrade your plan.`
+      );
+      throw new BadRequestException(
+        `Your subscription limit of ${plan.minutesLimit} minutes will be exceeded. Please upgrade your plan.`
+      );
+    }
+
+    return true;
+  }
+
   private static async createUserSubscription(
     userId: string,
     subscriptionPlanId: string,
