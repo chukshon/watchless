@@ -319,6 +319,54 @@ export class JobsService {
     };
   }
 
+  static async getAllJobs(userId: string) {
+    // Get Jobs in different states
+
+    const activeJobs = await this.transcriptionQueue.getActive();
+    const delayedJobs = await this.transcriptionQueue.getDelayed();
+    const waitingJobs = await this.transcriptionQueue.getWaiting();
+    const completedJobs = await this.transcriptionQueue.getCompleted();
+    const failedJobs = await this.transcriptionQueue.getFailed();
+
+    // Combine all jobs and sort by createdAt
+    const allJobs = [
+      ...activeJobs,
+      ...delayedJobs,
+      ...waitingJobs,
+      ...completedJobs,
+      ...failedJobs,
+    ];
+
+    // Filter jobs by user ID and sort by timestamp (most recent first)
+    const userJobs = allJobs
+      .filter((job) => job.data.userId === userId)
+      .sort((a, b) => b.timestamp - a.timestamp);
+
+    const jobDetails = await Promise.all(
+      userJobs.map(async (job) => {
+        const state = await job.getState();
+        return {
+          id: job.id,
+          state,
+          progress: job.progress(),
+          data: job.data,
+          timestamp: job.timestamp,
+          processedOn: job.processedOn,
+          finishedOn: job.finishedOn,
+          attemptsMade: job.attemptsMade,
+          result: job.returnvalue,
+          failedReason: job.failedReason,
+
+          // get video status if available
+          videoStatus:
+            (await this.getVideoStatus(job.data.videoInfo.url)) ?? null,
+        };
+      })
+    );
+
+    return jobDetails;
+  }
+
   private static async getVideoStatus(youtubeVideoUrl: string) {
     const video = await this.videoRepository.findOne({
       where: { url: youtubeVideoUrl },

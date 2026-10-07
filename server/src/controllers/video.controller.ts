@@ -47,6 +47,7 @@ export class VideoController {
       videoInfo,
       user
     );
+
     res.status(HTTPSTATUS.OK).json(
       getSuccessResponse(
         {
