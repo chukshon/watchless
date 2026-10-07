@@ -50,7 +50,6 @@ export async function seedSubscriptionPlans() {
       }
     }
 
-    // Soft-remove stale catalog plans (keep FK-safe; don't delete)
     const stalePlans = await repo
       .createQueryBuilder('plan')
       .where('plan.name NOT IN (:...seededNames)', { seededNames })
