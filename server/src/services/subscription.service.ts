@@ -252,6 +252,23 @@ export class SubscriptionService {
     }
   }
 
+  public static async cancelSubscription(userId: string) {
+    const subscription = await this.getUserSubscriptionById(userId);
+
+    if (!subscription) {
+      logger.error('No active subscription found');
+      throw new NotFoundException('No active subscription found');
+    }
+
+    await this.stripe.subscriptions.update(subscription.stripeSubscriptionId!, {
+      cancel_at_period_end: true,
+    });
+
+    return {
+      message: 'Subscription will be canceled at the end of the billing period',
+    };
+  }
+
   private static async createUserSubscription(
     userId: string,
     subscriptionPlanId: string,
