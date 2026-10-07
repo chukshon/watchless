@@ -13,7 +13,7 @@ import type {
 export class AuthController {
   static register = asyncHandler(async (req, res) => {
     const registeredUser = await AuthService.register(
-      req.body as RegisterInputT,
+      req.body as RegisterInputT
     );
 
     res
@@ -41,5 +41,14 @@ export class AuthController {
     const result = await AuthService.resendEmailVerification(email);
 
     res.json(getSuccessResponse(result, result.message));
+  });
+
+  static getLoggedInUser = asyncHandler(async (req, res) => {
+    const userId = req.user?.userId;
+    const loggedInUser = await AuthService.getUserById(userId!);
+
+    res
+      .status(HTTPSTATUS.OK)
+      .json(getSuccessResponse(loggedInUser, 'Profile fetched successfully'));
   });
 }

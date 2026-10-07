@@ -7,6 +7,7 @@ import {
   resendEmailVerificationSchema,
   verifyEmailSchema,
 } from '@/validators/auth.validator';
+import { authenticateUser } from '@/middleware/authenticate-user.middleware';
 
 const authRoutes = Router();
 
@@ -33,5 +34,7 @@ authRoutes.post(
   validateRequest({ body: resendEmailVerificationSchema }),
   AuthController.resendEmailVerification
 );
+
+authRoutes.get('/me', authenticateUser, AuthController.getLoggedInUser);
 
 export default authRoutes;
