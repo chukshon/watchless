@@ -85,4 +85,39 @@ export class SubscriptionController {
       .status(HTTPSTATUS.OK)
       .json(getSuccessResponse(result, 'Subscription cancelled successfully'));
   });
+
+  static handleWebhook = asyncHandler(async (req, res) => {
+    const signature = req.headers['stripe-signature'];
+
+    if (!signature || typeof signature !== 'string') {
+      throw new BadRequestException('Missing Stripe signature');
+    }
+
+    if (!env.STRIPE_WEBHOOK_SECRET) {
+      throw new InternalServerErrorException(
+        'Webhook secret is not configured'
+      );
+    }
+
+    let event: Stripe.Event;
+
+    try {
+      // req.body must be a raw Buffer for Stripe signature verification
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        signature,
+        env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (error) {
+      throw new BadRequestException(
+        `Webhook Error: ${(error as Error).message}`
+      );
+    }
+
+    const result = await SubscriptionService.handleWebHook(event);
+
+    res
+      .status(HTTPSTATUS.OK)
+      .json(getSuccessResponse(result, 'Webhook handled successfully'));
+  });
 }
