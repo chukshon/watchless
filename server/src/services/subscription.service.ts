@@ -350,18 +350,12 @@ export class SubscriptionService {
       const minutesNeeded = Math.ceil(videoDurationInSeconds / 60);
 
       if (totalVideos >= FREE_TIER_VIDEO_LIMIT) {
-        logger.error(
-          `Free tier limit reached: ${FREE_TIER_VIDEO_LIMIT} videos. Please upgrade your subscription.`
-        );
         throw new BadRequestException(
           `Free tier limit reached: ${FREE_TIER_VIDEO_LIMIT} videos. Please upgrade your subscription.`
         );
       }
 
       if (totalMinutes + minutesNeeded > FREE_TIER_MINUTES_LIMIT) {
-        logger.error(
-          `Free tier limit reached: ${FREE_TIER_MINUTES_LIMIT} minutes. Please upgrade your subscription.`
-        );
         throw new BadRequestException(
           `Free tier limit reached: ${FREE_TIER_MINUTES_LIMIT} minutes. Please upgrade your subscription.`
         );
@@ -381,9 +375,6 @@ export class SubscriptionService {
 
     // Check video limit
     if (plan.videoLimit > 0 && userSubscription.videoUsed >= plan.videoLimit) {
-      logger.error(
-        `Your subscription limit of ${plan.videoLimit} videos has been reached. Please upgrade your plan.`
-      );
       throw new BadRequestException(
         `Your subscription limit of ${plan.videoLimit} videos has been reached. Please upgrade your plan.`
       );
@@ -394,9 +385,6 @@ export class SubscriptionService {
       plan.minutesLimit > 0 &&
       userSubscription.minutesUsed + minutesNeeded > plan.minutesLimit
     ) {
-      logger.error(
-        `Your subscription limit of ${plan.minutesLimit} minutes will be exceeded. Please upgrade your plan.`
-      );
       throw new BadRequestException(
         `Your subscription limit of ${plan.minutesLimit} minutes will be exceeded. Please upgrade your plan.`
       );

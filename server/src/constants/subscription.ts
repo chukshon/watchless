@@ -21,7 +21,6 @@ export enum SubscriptionBillingInterval {
   YEARLY = 'yearly',
 }
 
-/** Catalog shape; Stripe price IDs come from env (test vs live). */
 export const getSubscriptionPlans = (): SubscriptionPlanT[] => [
   {
     name: 'Basic',

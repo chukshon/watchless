@@ -93,7 +93,6 @@ export class SubscriptionController {
     let event: Stripe.Event;
 
     try {
-      // req.body must be a raw Buffer for Stripe signature verification
       event = stripe.webhooks.constructEvent(
         req.body,
         signature,
