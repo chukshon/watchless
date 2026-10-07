@@ -7,11 +7,16 @@ import { createBullAdminApp } from '@/lib/bull-board';
 import { AppDataSource } from '@/database/data-source';
 import { JobsService } from '@/services/jobs.service';
 
+import { seedSubscriptionPlans } from '@/database/seed/subscription-plans.seed';
+
 async function bootstrap() {
   try {
     // Initialize database connection
     await AppDataSource.initialize();
     logger.info('Database connection established');
+
+    // Seed Subscription Plans
+    await seedSubscriptionPlans();
 
     // Initialize jobs service
     await JobsService.initialize();

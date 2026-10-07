@@ -8,13 +8,25 @@ export enum SubscriptionStatus {
   TRIAL = 'trial',
 }
 
+export enum SubscriptionTier {
+  BASIC = 'basic',
+  PREMIUM = 'premium',
+  PRO = 'pro',
+}
+
+export enum SubscriptionBillingInterval {
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly',
+}
+
 export const SUBSCRIPTION_PLANS: SubscriptionPlanT[] = [
   {
     name: 'Basic',
     description: 'Basic subscription plan',
     price: 9.99,
+    duration: 30,
     currency: 'USD',
-    billingInterval: 'monthly',
+    billingInterval: SubscriptionBillingInterval.MONTHLY,
     stripePriceId: 'price_1QZQZQZQZQZQZQZQZQZQZQZQ',
     videoLimit: 10,
     minutesLimit: 60,
@@ -24,8 +36,9 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanT[] = [
     name: 'Premium',
     description: 'Premium plan with more features',
     price: 19.99,
+    duration: 30,
     currency: 'USD',
-    billingInterval: 'monthly',
+    billingInterval: SubscriptionBillingInterval.MONTHLY,
     stripePriceId: 'price_1QZQZQZQZQZQZQZQZQZQZQZQ',
     videoLimit: 30,
     minutesLimit: 180,
@@ -35,8 +48,9 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanT[] = [
     name: 'Pro',
     description: 'Professional plan with all features',
     price: 49.99,
+    duration: 30,
     currency: 'USD',
-    billingInterval: 'monthly',
+    billingInterval: SubscriptionBillingInterval.MONTHLY,
     stripePriceId: 'price_1QZQZQZQZQZQZQZQZQZQZQZQ',
     videoLimit: -1, // Unlimited
     minutesLimit: -1, // Unlimited
