@@ -1,6 +1,6 @@
 # Watchless AI
 
-Spend less time watching. Watchless turns any YouTube video into a transcript and a clear summary you can keep.
+Watchless turns any YouTube video into a transcript and a structured AI-written analysis and summary you can keep
 
 ## How it works
 
