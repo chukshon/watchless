@@ -3,6 +3,7 @@ import { unlink } from 'fs/promises';
 
 import ffmpeg from 'fluent-ffmpeg';
 import { protos } from '@google-cloud/speech';
+import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 
 import { env } from '@/config/env';
 import {
@@ -19,6 +20,8 @@ import {
 } from '@/lib/google-cloud';
 import { logger } from '@/lib/logger';
 import type { TranscriptionResultT } from '@/types/transcription';
+
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 export class TranscriptionService {
   static async ensureBucketExists() {
@@ -97,6 +100,11 @@ export class TranscriptionService {
           'loudnorm=I=-16:LRA=-11:TP=-1.5', // Normalize audio levels,
           'aformat=channel_layouts=mono', // Ensure mono output,
         ])
+        .outputOptions(['-acodec pcm_s16le', '-ac 1', '-ar 16000'])
+        .save(outputPath)
+        .on('start', (commandLine) => {
+          logger.info(`FFMPEG conversion started: ${commandLine}`);
+        })
         .on('end', () => {
           logger.info(`Audio converted to WAV successfully to ${outputPath}`);
           resolve(outputPath);
