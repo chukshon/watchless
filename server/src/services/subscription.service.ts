@@ -197,6 +197,45 @@ export class SubscriptionService {
       }
     }
   }
+  private static async handleSubscriptionUpdated(
+    stripeSubscription: Stripe.Subscription
+  ) {
+    const stripeCustomerId = stripeSubscription.customer as string;
+
+    const user = await this.userRepository.findOneBy({
+      stripeCustomerId,
+    });
+
+    if (user) {
+      // Update the subscription period
+      const userSubscription = await this.userSubscriptionRepository.findOneBy({
+        stripeSubscriptionId: stripeSubscription.id,
+      });
+      if (userSubscription) {
+        const item = stripeSubscription.items.data[0];
+        userSubscription.status =
+          stripeSubscription.status as SubscriptionStatus;
+        userSubscription.currentPeriodStartDate = new Date(
+          item.current_period_start * 1000
+        );
+        userSubscription.currentPeriodEndDate = new Date(
+          item.current_period_end * 1000
+        );
+
+        if (stripeSubscription.cancel_at) {
+          userSubscription.cancelAt = new Date(
+            stripeSubscription.cancel_at * 1000
+          );
+        }
+        if (stripeSubscription.canceled_at) {
+          userSubscription.cancelledAt = new Date(
+            stripeSubscription.canceled_at * 1000
+          );
+        }
+        await this.userSubscriptionRepository.save(userSubscription);
+      }
+    }
+  }
 
   private static async createUserSubscription(
     userId: string,
