@@ -2,12 +2,10 @@ import { NextFunction, Request, Response } from 'express';
 import { SubscriptionService } from '@/services/subscription.service';
 import { HTTPSTATUS } from '@/constants/http-status-code';
 import { getErrorResponse } from '@/types/api-response';
-import {
-  NotFoundException,
-  UnauthorizedException,
-} from '@/errors/http-errors';
+import { NotFoundException, UnauthorizedException } from '@/errors/http-errors';
+import { SubscriptionTier } from '@/constants/subscription';
 
-export const requiresSubscription = (tier: 'basic' | 'premium' | 'pro') => {
+export const requiresSubscription = (tier: SubscriptionTier) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.userId;
@@ -22,20 +20,30 @@ export const requiresSubscription = (tier: 'basic' | 'premium' | 'pro') => {
           await SubscriptionService.getUserSubscriptionById(userId);
       } catch (error) {
         if (error instanceof NotFoundException) {
-          return res.status(HTTPSTATUS.PAYMENT_REQUIRED).json(
-            getErrorResponse(
-              `This feature requires a ${tier} subscription. Please upgrade to access it.`
-            )
-          );
+          return res
+            .status(HTTPSTATUS.PAYMENT_REQUIRED)
+            .json(
+              getErrorResponse(
+                `This feature requires a ${tier} subscription. Please upgrade to access it.`
+              )
+            );
         }
         throw error;
       }
 
       // Check subscription tier
-      const planName = subscription.subscriptionPlan.name.toLowerCase();
+      const planName: SubscriptionTier =
+        subscription.subscriptionPlan.name.toLowerCase() as SubscriptionTier;
 
       // Example tier hierarchy: free -> basic -> premium -> pro
-      if (tier === 'basic' && !['basic', 'premium', 'pro'].includes(planName)) {
+      if (
+        tier === SubscriptionTier.BASIC &&
+        ![
+          SubscriptionTier.BASIC,
+          SubscriptionTier.PREMIUM,
+          SubscriptionTier.PRO,
+        ].includes(planName)
+      ) {
         return res
           .status(HTTPSTATUS.PAYMENT_REQUIRED)
           .json(
@@ -44,8 +52,8 @@ export const requiresSubscription = (tier: 'basic' | 'premium' | 'pro') => {
             )
           );
       } else if (
-        tier === 'premium' &&
-        !['premium', 'pro'].includes(planName)
+        tier === SubscriptionTier.PREMIUM &&
+        ![SubscriptionTier.PREMIUM, SubscriptionTier.PRO].includes(planName)
       ) {
         return res
           .status(HTTPSTATUS.PAYMENT_REQUIRED)
@@ -54,7 +62,10 @@ export const requiresSubscription = (tier: 'basic' | 'premium' | 'pro') => {
               'This feature requires at least a premium subscription. Please upgrade.'
             )
           );
-      } else if (tier === 'pro' && planName !== 'pro') {
+      } else if (
+        tier === SubscriptionTier.PRO &&
+        planName !== SubscriptionTier.PRO
+      ) {
         return res
           .status(HTTPSTATUS.PAYMENT_REQUIRED)
           .json(
