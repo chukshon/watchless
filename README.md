@@ -4,7 +4,7 @@ Spend less time watching. Watchless turns any YouTube video into a transcript an
 
 ## How it works
 
-When a signed-in user pastes a YouTube URL, the API accepts the request immediately and queues a background job—so the client isn’t held on a long HTTP request while audio is downloaded and transcribed, then analyzed by AI.
+When a signed-in user pastes a YouTube URL, the API accepts the request immediately and queues a background job so the client isn’t held on a long HTTP request while audio is downloaded and transcribed, then analyzed by AI.
 
 That job pulls the video’s audio, converts it for transcription, and sends it through speech-to-text. The resulting transcript is passed to an LLM, which returns a short summary plus structured extras (key points, topics, suggested tags, sentiment). Everything is stored against your account so you can open it again later.
 
