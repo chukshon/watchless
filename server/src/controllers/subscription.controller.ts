@@ -76,4 +76,13 @@ export class SubscriptionController {
         getSuccessResponse(session, 'Checkout session created successfully')
       );
   });
+
+  static cancelSubscription = asyncHandler(async (req, res) => {
+    const userId = req.user?.userId;
+    const result = await SubscriptionService.cancelSubscription(userId!);
+
+    res
+      .status(HTTPSTATUS.OK)
+      .json(getSuccessResponse(result, 'Subscription cancelled successfully'));
+  });
 }
