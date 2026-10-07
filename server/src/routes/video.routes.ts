@@ -20,8 +20,6 @@ videoRoutes.get(
   VideoController.getVideoById
 );
 
-videoRoutes.get('/jobs/running', authenticateUser, VideoController.getAllJobs);
-
 videoRoutes.post(
   '/get-video-info',
   authenticateUser,
@@ -50,5 +48,7 @@ videoRoutes.get(
   validateRequest({ params: jobIdParamSchema }),
   VideoController.getTranscriptionStatus
 );
+
+videoRoutes.get('/jobs/running', authenticateUser, VideoController.getAllJobs);
 
 export default videoRoutes;

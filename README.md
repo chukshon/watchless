@@ -1,45 +1,61 @@
-# Watchless
+# Watchless AI
 
-Watchless helps you get the point of a YouTube video without sitting through all of it.
+Spend less time watching. Watchless turns any YouTube video into a transcript and a clear summary you can keep.
 
-You paste a YouTube URL while signed in. The API accepts the request right away and hands the work to a background job, so you’re not waiting on a long HTTP request while audio downloads or speech recognition runs.
+## How it works
+
+When a signed-in user pastes a YouTube URL, the API accepts the request immediately and queues a background job—so the client isn’t held on a long HTTP request while audio is downloaded and transcribed, then analyzed by AI.
 
 That job pulls the video’s audio, converts it for transcription, and sends it through speech-to-text. The resulting transcript is passed to an LLM, which returns a short summary plus structured extras (key points, topics, suggested tags, sentiment). Everything is stored against your account so you can open it again later.
 
 Because transcription and analysis are expensive, Stripe-backed plans limit how many videos and how many minutes of audio you can process.
 
-## What it does
+## Features
+
+Routes are under `/api`. Protected routes expect `Authorization: Bearer <token>`.
 
 ### Accounts and email
-- Register and log in with email and password; sessions use JWT access tokens
-- Email verification on signup (token link), with a resend-verification flow
-- Welcome email after a successful verify
-- Transactional mail goes out through Resend (HTML templates in the API)
-- Authenticated profile endpoint for the current user
+
+- `POST /auth/register` — create an account; sends a verification email
+- `POST /auth/login` — sign in; returns a JWT
+- `GET /auth/verify-email` — verify email via token query param
+- `POST /auth/resend-verification` — resend the verification email
+- `GET /auth/me` — current user profile
+- Welcome email after a successful verify (Resend + HTML templates)
 
 ### Video library
-- Look up YouTube metadata (title, duration, author, thumbnail) before processing
-- Start a transcription job from a URL and poll job status by id
-- List your videos and open a single video with its transcript and analysis
-- Optional download-audio endpoint for inspecting the extracted media path
 
-### Transcription and analysis
-- Audio download and conversion (FFmpeg), then speech-to-text via Google Cloud
-- LLM analysis (Gemini) into summary, key points, topics, tags, and sentiment
-- Work runs on a Bull queue backed by Redis so the API stays responsive
+- `GET /videos` — list the user’s videos
+- `GET /videos/:id` — video detail with transcript and analysis
+- `POST /videos/get-video-info` — YouTube metadata (title, duration, author, thumbnail)
+- `POST /videos/download-audio` — extract audio for inspection
+- `GET /videos/jobs/running` — running jobs for the user
+
+### Transcription and AI analysis
+
+- `POST /videos/transcribe-video` — enqueue transcription (requires Basic plan)
+- `GET /videos/transcribe-video/:jobId/status` — poll job status
+- Audio download/conversion (FFmpeg), speech-to-text (Google Cloud), then Gemini summary (key points, topics, tags, sentiment)
+- Work runs on Bull + Redis so the API stays responsive; usage increments after a job is accepted
 - Music-heavy content can be short-circuited when detected
-- Usage is incremented against the user’s plan after a job is accepted
+- Blocks transcription requests when the user has no plan or has hit their video/minutes limit
 
-### Subscriptions and billing
-- Catalog of plans (Basic / Premium / Pro) with video and minutes limits
-- Stripe Checkout to subscribe; webhooks keep local subscription state in sync
-- View current subscription, cancel at period end
-- Route-level tier checks and pre-job limit checks so unpaid or over-limit users are blocked
+### Stripe Subscriptions and billing
+
+- `GET /subscriptions/subscription-plans` — public plan catalog (Basic / Premium / Pro)
+- `GET /subscriptions/user-subscription` — current subscription
+- `POST /subscriptions/create-checkout-session` — start Stripe Checkout
+- `POST /subscriptions/cancel-subscription` — cancel at period end
+- `POST /subscriptions/webhook` — Stripe webhooks (raw body, before JSON parsing)
+
+### Health
+
+- `GET /health` — health check
 
 ### Local ops
-- Docker Compose for Postgres and Redis
-- TypeORM migrations and an idempotent plan seed
-- Bull Board UI to inspect queued, active, and failed jobs in development
+
+- Bull Board for queue inspection in development (`BULL_ADMIN_PORT`, `/admin/queues`)
+- Docker Compose for Postgres and Redis; TypeORM migrations; idempotent plan seed
 
 ## Stack
 
@@ -86,9 +102,9 @@ npm run migration:run
 npm run dev
 ```
 
-Defaults (unless you change them):
+Defaults (unless you change them in `.env`):
 
-- API: `http://localhost:8080`
+- API: `http://localhost:8080` (set `PORT`; Zod default is `3000` if unset)
 - Bull Board: `http://localhost:8081/admin/queues`
 
 Subscription plans are seeded on API boot (idempotent upsert by plan name). You can also run:
@@ -131,13 +147,3 @@ Copy `server/.env.example` to `server/.env`. Required groups:
 | `npm run migration:run`                | Apply migrations                         |
 | `npm run migration:generate -- <path>` | Generate a migration from entity changes |
 | `npm run seed:subscription-plans`      | Seed / update catalog plans              |
-
-## API surface (high level)
-
-- `GET /health` — health check
-- `/auth` — register, login, verify email, current user
-- `/videos` — video info, download audio, transcription jobs, job status, user library
-- `/subscriptions` — plans, checkout, current subscription, cancel
-- `POST /api/subscriptions/webhook` — Stripe webhooks (raw body; registered before JSON parsing)
-
-Protected routes expect `Authorization: Bearer <token>`.
