@@ -162,6 +162,7 @@ export class SubscriptionService {
       );
     }
   }
+
   private static async handleInvoicePaid(stripeInvoice: Stripe.Invoice) {
     const subscriptionId =
       stripeInvoice.parent?.subscription_details?.subscription;
@@ -197,6 +198,7 @@ export class SubscriptionService {
       }
     }
   }
+
   private static async handleSubscriptionUpdated(
     stripeSubscription: Stripe.Subscription
   ) {
@@ -234,6 +236,19 @@ export class SubscriptionService {
         }
         await this.userSubscriptionRepository.save(userSubscription);
       }
+    }
+  }
+
+  private static async handleSubscriptionDeleted(
+    stripeSubscription: Stripe.Subscription
+  ) {
+    const userSubscription = await this.userSubscriptionRepository.findOneBy({
+      stripeSubscriptionId: stripeSubscription.id,
+    });
+    if (userSubscription) {
+      userSubscription.status = SubscriptionStatus.CANCELLED;
+      userSubscription.cancelledAt = new Date();
+      await this.userSubscriptionRepository.save(userSubscription);
     }
   }
 
