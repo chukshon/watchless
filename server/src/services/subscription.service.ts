@@ -47,4 +47,31 @@ export class SubscriptionService {
 
     return subscriptionPlan;
   }
+
+  private static async getUserSubscriptionById(UserId: string) {
+    if (!UserId) {
+      logger.error('User ID is required');
+      throw new BadRequestException('User ID is required');
+    }
+
+    const userSubscription = await this.userSubscriptionRepository.findOne({
+      where: {
+        user: {
+          id: UserId,
+        },
+        status: SubscriptionStatus.ACTIVE,
+      },
+      relations: ['subscriptionPlan'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    if (!userSubscription) {
+      logger.error('User subscription not found');
+      throw new NotFoundException('User subscription not found');
+    }
+
+    return userSubscription;
+  }
 }
