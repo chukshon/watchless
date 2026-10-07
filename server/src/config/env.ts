@@ -37,6 +37,8 @@ const envSchema = z.object({
   BULL_ADMIN_PORT: z.coerce.number().int().positive().default(8081),
   REDIS_HOST: z.string().min(1).default('localhost'),
   REDIS_PORT: z.coerce.number().int().positive().default(6379),
+
+  STRIPE_SECRET_KEY: z.string().min(1),
 });
 
 export const env = createEnv(envSchema);
