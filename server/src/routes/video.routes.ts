@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { VideoController } from '@/controllers/video.controller';
 import { authenticateUser } from '@/middleware/authenticate-user.middleware';
 import { validateRequest } from '@/middleware/validate-request.middleware';
-import { idParamSchema, youtubeUrlSchema } from '@/validators/shared.validator';
+import { youtubeUrlSchema } from '@/validators/shared.validator';
+import { jobIdParamSchema, videoIdParamSchema } from '@/validators/video';
 
 const videoRoutes = Router();
 
@@ -11,7 +12,7 @@ videoRoutes.get('/', authenticateUser, VideoController.getUserVideos);
 videoRoutes.get(
   '/:id',
   authenticateUser,
-  validateRequest({ params: idParamSchema }),
+  validateRequest({ params: videoIdParamSchema }),
   VideoController.getVideoById
 );
 
@@ -39,9 +40,9 @@ videoRoutes.post(
 );
 
 videoRoutes.get(
-  '/transcribe-video/:id/status',
+  '/transcribe-video/:jobId/status',
   authenticateUser,
-  validateRequest({ params: idParamSchema }),
+  validateRequest({ params: jobIdParamSchema }),
   VideoController.getTranscriptionStatus
 );
 

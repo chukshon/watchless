@@ -4,10 +4,8 @@ import { AuthService } from '@/services/auth.service';
 import { JobsService } from '@/services/jobs.service';
 import { VideoService } from '@/services/video.service';
 import { getSuccessResponse } from '@/types/api-response';
-import type {
-  YoutubeUrlInputT,
-  IdParamInputT,
-} from '@/validators/shared.validator';
+import type { YoutubeUrlInputT } from '@/validators/shared.validator';
+import { JobIdParamInputT, VideoIdParamInputT } from '@/validators/video';
 
 export class VideoController {
   static getYoutubeVideoInfo = asyncHandler(async (req, res) => {
@@ -78,10 +76,10 @@ export class VideoController {
   });
 
   static getVideoById = asyncHandler(async (req, res) => {
-    const { id } = req.params as IdParamInputT;
+    const { videoId } = req.params as VideoIdParamInputT;
     const userId = req.user?.userId;
 
-    const video = await VideoService.getVideoById(id, userId!);
+    const video = await VideoService.getVideoById(videoId, userId!);
 
     // transform the response to include only necessary fields
     const transformedVideo = VideoService.transformVideo(video!);

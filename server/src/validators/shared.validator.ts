@@ -11,9 +11,4 @@ export const youtubeUrlSchema = z.object({
     }),
 });
 
-export const idParamSchema = z.object({
-  id: z.string().uuid('ID must be a valid UUID').min(1, 'ID is required'),
-});
-
 export type YoutubeUrlInputT = z.infer<typeof youtubeUrlSchema>;
-export type IdParamInputT = z.infer<typeof idParamSchema>;
