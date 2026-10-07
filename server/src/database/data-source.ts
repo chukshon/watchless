@@ -7,6 +7,8 @@ import { Analysis } from '@/database/entities/analysis.entity';
 import { Transcription } from '@/database/entities/transcription.entity';
 import { User } from '@/database/entities/user.entity';
 import { Video } from '@/database/entities/video.entity';
+import { UserSubscription } from './entities/user-subscription.entity';
+import { SubscriptionPlan } from './entities/subscription-plan.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -17,6 +19,13 @@ export const AppDataSource = new DataSource({
   database: env.DB_NAME,
   synchronize: false,
   // logging: env.NODE_ENV === 'development',
-  entities: [User, Video, Transcription, Analysis],
+  entities: [
+    User,
+    Video,
+    Transcription,
+    Analysis,
+    UserSubscription,
+    SubscriptionPlan,
+  ],
   migrations: [join(__dirname, 'migrations', '**', '*.{ts,js}')],
 });

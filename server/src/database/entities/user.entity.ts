@@ -13,6 +13,7 @@ import {
 import bcrypt from 'bcrypt';
 
 import { Video } from '@/database/entities/video.entity';
+import { UserSubscription } from './user-subscription.entity';
 
 const SALT_ROUNDS = 12;
 
@@ -53,6 +54,9 @@ export class User {
   @Column({ name: 'last_login', type: 'timestamptz', nullable: true })
   lastLogin: Date | null;
 
+  @Column({ name: 'stripe_customer_id', type: 'varchar', nullable: true })
+  stripeCustomerId: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
@@ -61,6 +65,12 @@ export class User {
 
   @OneToMany(() => Video, (video) => video.user)
   videos: Video[];
+
+  @OneToMany(
+    () => UserSubscription,
+    (userSubscription) => userSubscription.user
+  )
+  userSubscriptions: UserSubscription[];
 
   @BeforeInsert()
   async hashPasswordOnInsert(): Promise<void> {
