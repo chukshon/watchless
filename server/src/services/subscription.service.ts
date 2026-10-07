@@ -27,4 +27,24 @@ export class SubscriptionService {
       },
     });
   }
+
+  private static async getSubscriptionPlanById(SubscriptionPlanId: string) {
+    if (!SubscriptionPlanId) {
+      logger.error('Subscription plan ID is required');
+      throw new BadRequestException('Subscription plan ID is required');
+    }
+
+    const subscriptionPlan = await this.subscriptionPlanRepository.findOne({
+      where: {
+        id: SubscriptionPlanId,
+      },
+    });
+
+    if (!subscriptionPlan) {
+      logger.error('Subscription plan not found');
+      throw new NotFoundException('Subscription plan not found');
+    }
+
+    return subscriptionPlan;
+  }
 }
