@@ -25,4 +25,36 @@ export class SubscriptionController {
         )
       );
   });
+  static getUserSubscription = asyncHandler(async (req, res) => {
+    const userId = req.user?.userId;
+
+    try {
+      const subscription = await SubscriptionService.getUserSubscriptionById(
+        userId!
+      );
+
+      res.status(HTTPSTATUS.OK).json(
+        getSuccessResponse(
+          {
+            isSubscribed: true,
+            subscription,
+          },
+          'User subscription fetched successfully'
+        )
+      );
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        res
+          .status(HTTPSTATUS.OK)
+          .json(
+            getSuccessResponse(
+              { isSubscribed: false },
+              'User has no active subscription'
+            )
+          );
+        return;
+      }
+      throw error;
+    }
+  });
 }
