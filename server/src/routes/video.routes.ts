@@ -4,6 +4,8 @@ import { authenticateUser } from '@/middleware/authenticate-user.middleware';
 import { validateRequest } from '@/middleware/validate-request.middleware';
 import { youtubeUrlSchema } from '@/validators/shared.validator';
 import { jobIdParamSchema, videoIdParamSchema } from '@/validators/video';
+import { requiresSubscription } from '@/middleware/subscription.middleware';
+import { SubscriptionTier } from '@/constants/subscription';
 
 const videoRoutes = Router();
 
@@ -35,6 +37,7 @@ videoRoutes.post(
 videoRoutes.post(
   '/transcribe-video',
   authenticateUser,
+  requiresSubscription(SubscriptionTier.BASIC),
   validateRequest({ body: youtubeUrlSchema }),
   VideoController.transcribeVideo
 );

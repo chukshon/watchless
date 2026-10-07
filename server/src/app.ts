@@ -7,8 +7,15 @@ import { morganStream } from '@/lib/logger';
 import { errorHandlerMiddleware } from '@/middleware/error.middleware';
 import { notFoundMiddleware } from '@/middleware/not-found.middleware';
 import routes from '@/routes';
+import { SubscriptionController } from './controllers/subscription.controller';
 
 const app = express();
+
+app.post(
+  '/api/subscriptions/webhook',
+  express.raw({ type: 'application/json' }),
+  SubscriptionController.handleWebhook
+);
 
 app.use(cors());
 app.use(
