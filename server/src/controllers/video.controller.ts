@@ -2,10 +2,11 @@ import { HTTPSTATUS } from '@/constants/http-status-code';
 import { asyncHandler } from '@/middleware/async-handler.middleware';
 import { AuthService } from '@/services/auth.service';
 import { JobsService } from '@/services/jobs.service';
+import { SubscriptionService } from '@/services/subscription.service';
 import { VideoService } from '@/services/video.service';
 import { getSuccessResponse } from '@/types/api-response';
 import type { YoutubeUrlInputT } from '@/validators/shared.validator';
-import { JobIdParamInputT, VideoIdParamInputT } from '@/validators/video';
+import { VideoIdParamInputT } from '@/validators/video';
 
 export class VideoController {
   static getYoutubeVideoInfo = asyncHandler(async (req, res) => {
@@ -43,11 +44,20 @@ export class VideoController {
     const user = await AuthService.getUserById(userId!);
     const videoInfo = await VideoService.getYoutubeVideoInfo(youtubeUrl);
 
+    // Chceck Subscription Limits before creating the job
+    await SubscriptionService.checkSubscriptionLimits(
+      userId!,
+      videoInfo.duration
+    );
+
     const job = await JobsService.addTranscriptionJob(
       youtubeUrl,
       videoInfo,
       user
     );
+
+    // Increment Usage after creating the job
+    await SubscriptionService.incrementUsage(userId!, videoInfo.duration);
 
     res.status(HTTPSTATUS.OK).json(
       getSuccessResponse(
