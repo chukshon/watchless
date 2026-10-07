@@ -1,6 +1,6 @@
 import { AppDataSource } from '@/database/data-source';
 import { SubscriptionPlan } from '@/database/entities/subscription-plan.entity';
-import { SUBSCRIPTION_PLANS } from '@/constants/subscription';
+import { getSubscriptionPlans } from '@/constants/subscription';
 import { logger } from '@/lib/logger';
 
 export async function seedSubscriptionPlans() {
@@ -8,11 +8,13 @@ export async function seedSubscriptionPlans() {
     await AppDataSource.initialize();
   }
 
+  const plans = getSubscriptionPlans();
+
   await AppDataSource.transaction(async (manager) => {
     const repo = manager.getRepository(SubscriptionPlan);
-    const seededNames = SUBSCRIPTION_PLANS.map((plan) => plan.name);
+    const seededNames = plans.map((plan) => plan.name);
 
-    for (const plan of SUBSCRIPTION_PLANS) {
+    for (const plan of plans) {
       const existing = await repo.findOne({ where: { name: plan.name } });
 
       if (existing) {

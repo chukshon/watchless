@@ -1,4 +1,6 @@
+import { env } from '@/config/env';
 import { SubscriptionPlanT } from '@/types/subscription';
+
 export enum SubscriptionStatus {
   ACTIVE = 'active',
   CANCELLED = 'cancelled',
@@ -19,7 +21,8 @@ export enum SubscriptionBillingInterval {
   YEARLY = 'yearly',
 }
 
-export const SUBSCRIPTION_PLANS: SubscriptionPlanT[] = [
+/** Catalog shape; Stripe price IDs come from env (test vs live). */
+export const getSubscriptionPlans = (): SubscriptionPlanT[] => [
   {
     name: 'Basic',
     description: 'Basic subscription plan',
@@ -27,7 +30,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanT[] = [
     duration: 30,
     currency: 'USD',
     billingInterval: SubscriptionBillingInterval.MONTHLY,
-    stripePriceId: 'price_1QZQZQZQZQZQZQZQZQZQZQZQ',
+    stripePriceId: env.STRIPE_PRICE_BASIC,
     videoLimit: 10,
     minutesLimit: 60,
     isActive: true,
@@ -39,7 +42,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanT[] = [
     duration: 30,
     currency: 'USD',
     billingInterval: SubscriptionBillingInterval.MONTHLY,
-    stripePriceId: 'price_1QZQZQZQZQZQZQZQZQZQZQZQ',
+    stripePriceId: env.STRIPE_PRICE_PREMIUM,
     videoLimit: 30,
     minutesLimit: 180,
     isActive: true,
@@ -51,7 +54,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanT[] = [
     duration: 30,
     currency: 'USD',
     billingInterval: SubscriptionBillingInterval.MONTHLY,
-    stripePriceId: 'price_1QZQZQZQZQZQZQZQZQZQZQZQ',
+    stripePriceId: env.STRIPE_PRICE_PRO,
     videoLimit: -1, // Unlimited
     minutesLimit: -1, // Unlimited
     isActive: true,
