@@ -1,3 +1,4 @@
+import Stripe from 'stripe';
 import { env } from '@/config/env';
 import { logger } from '@/lib/logger';
 import { initializeStripe } from '@/lib/stripe';
@@ -140,5 +141,64 @@ export class SubscriptionService {
     return {
       url: session.url,
     };
+  }
+
+  public static async handleWebHook(stripeEvent: Stripe.Event) {}
+
+  private static async handleCheckoutSessionCompleted(
+    stripeSession: Stripe.Checkout.Session
+  ) {
+    const { userId, subscriptionPlanId } = stripeSession.metadata || {};
+
+    const subscription = await this.stripe.subscriptions.retrieve(
+      stripeSession.subscription as string
+    );
+
+    if (userId && subscriptionPlanId) {
+      await this.createUserSubscription(
+        userId,
+        subscriptionPlanId,
+        subscription
+      );
+    }
+  }
+
+  private static async createUserSubscription(
+    userId: string,
+    subscriptionPlanId: string,
+    stripeSubscription: Stripe.Subscription
+  ) {
+    const user = await this.userRepository.findOneBy({
+      id: userId,
+    });
+
+    const subscriptionPlan = await this.subscriptionPlanRepository.findOneBy({
+      id: subscriptionPlanId,
+    });
+
+    if (!user || !subscriptionPlan) {
+      return;
+    }
+
+    const userSubscription = new UserSubscription();
+    const item = stripeSubscription.items.data[0];
+    userSubscription.currentPeriodStartDate = new Date(
+      item.current_period_start * 1000
+    );
+    userSubscription.currentPeriodEndDate = new Date(
+      item.current_period_end * 1000
+    );
+    userSubscription.user = user;
+    userSubscription.subscriptionPlan = subscriptionPlan;
+    userSubscription.status = SubscriptionStatus.ACTIVE;
+    userSubscription.stripeSubscriptionId = stripeSubscription.id;
+    userSubscription.currentPeriodStartDate = new Date(
+      item.current_period_start * 1000
+    );
+    userSubscription.currentPeriodEndDate = new Date(
+      item.current_period_end * 1000
+    );
+
+    await this.userSubscriptionRepository.save(userSubscription);
   }
 }
