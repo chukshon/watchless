@@ -2,11 +2,7 @@ import type Stripe from 'stripe';
 
 import { env } from '@/config/env';
 import { HTTPSTATUS } from '@/constants/http-status-code';
-import {
-  BadRequestException,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@/errors/http-errors';
+import { BadRequestException, NotFoundException } from '@/errors/http-errors';
 
 import { stripe } from '@/lib/stripe';
 import { asyncHandler } from '@/middleware/async-handler.middleware';
@@ -92,12 +88,6 @@ export class SubscriptionController {
 
     if (!signature || typeof signature !== 'string') {
       throw new BadRequestException('Missing Stripe signature');
-    }
-
-    if (!env.STRIPE_WEBHOOK_SECRET) {
-      throw new InternalServerErrorException(
-        'Webhook secret is not configured'
-      );
     }
 
     let event: Stripe.Event;
